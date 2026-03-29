@@ -5,8 +5,8 @@
 //  Created by xdmGzDev on 27/3/26.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct ITXEcommerceApp: App {
