@@ -9,7 +9,7 @@ import Foundation
 @frozen
 public enum KnownError: Sendable {
 
-    public enum ErrorCode: String {
+    public enum ErrorCode: String, Sendable {
 
         case unknown = "CoreNetwork.KnownError.ErrorCode.unknown"
         case decodingData = "CoreNetwork.KnownError.ErrorCode.decodingData"
@@ -74,7 +74,7 @@ public enum KnownError: Sendable {
         }
     }
 
-    public enum StatusCode: Int, CustomDebugStringConvertible {
+    public enum StatusCode: Int, CustomDebugStringConvertible, Sendable {
 
         case badRequest = 400
         case unauthorized = 401

@@ -14,13 +14,13 @@ public enum CoreHTTP: Sendable {
         public static let successRange: ClosedRange<Int> = 200...299
     }
 
-    public enum Scheme: String {
+    public enum Scheme: String, Sendable {
 
         case http = "http"
         case https = "https"
     }
 
-    public enum Method: String {
+    public enum Method: String, Sendable {
 
         case delete = "DELETE"
         case connect = "CONNECT"
@@ -31,7 +31,7 @@ public enum CoreHTTP: Sendable {
         case put = "PUT"
     }
 
-    public enum HeaderKey: String {
+    public enum HeaderKey: String, Sendable {
 
         case accept = "Accept"
         case acceptCharset = "Accept-Charset"
@@ -54,7 +54,7 @@ public enum CoreHTTP: Sendable {
         case userAgent = "User-Agent"
     }
 
-    public enum MimeType: String {
+    public enum MimeType: String, Sendable {
         case any = "*/*"
         case anyImage = "image/*"
 
@@ -83,7 +83,7 @@ public enum CoreHTTP: Sendable {
         case multipart = "multipart/form-data"
     }
 
-    public enum AuthorizationMethod {
+    public enum AuthorizationMethod: Sendable {
 
         case basic(token: String)
         case bearer(token: String)
