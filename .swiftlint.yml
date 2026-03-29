@@ -54,8 +54,10 @@ opt_in_rules:
   - sorted_imports
   - toggle_bool
   - unavailable_function
-  - unused_import
   - yoda_condition
+
+analyzer_rules:
+  - unused_import
 
 disabled_rules:
   - todo                 # TODOs allowed during development
