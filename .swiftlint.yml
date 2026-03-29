@@ -1,0 +1,67 @@
+# SwiftLint configuration for ITXEcommerce
+# Docs: https://realm.github.io/SwiftLint/
+
+included:
+  - ITXEcommerce
+
+excluded:
+  - ITXEcommerceTests
+  - ITXEcommerceUITests
+
+# ── Line length ────────────────────────────────────────────────────────────────
+line_length:
+  warning: 200
+  error: 250
+  ignores_comments: true
+  ignores_urls: true
+
+# ── Identifier names ───────────────────────────────────────────────────────────
+# Allow short RGB/alpha channel names and 2-letter locale codes (es, gl, en)
+identifier_name:
+  min_length:
+    warning: 1
+    error: 1
+  excluded:
+    - r
+    - g
+    - b
+    - a
+    - id
+    - es
+    - gl
+    - en
+
+# ── Type names ─────────────────────────────────────────────────────────────────
+# The app entry point deliberately starts with lowercase "i" (iOS convention)
+type_name:
+  excluded:
+    - iTransportePublicoCOApp
+
+# ── Opt-in rules (quality over style) ─────────────────────────────────────────
+opt_in_rules:
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - empty_collection_literal
+  - empty_string
+  - fatal_error_message
+  - first_where
+  - flatmap_over_map_reduce
+  - force_unwrapping
+  - identical_operands
+  - last_where
+  - legacy_multiple
+  - optional_enum_case_matching
+  - prefer_zero_over_explicit_init
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - shorthand_optional_binding
+  - sorted_first_last
+  - sorted_imports
+  - toggle_bool
+  - unavailable_function
+  - unused_import
+  - yoda_condition
+
+disabled_rules:
+  - todo                 # TODOs allowed during development
