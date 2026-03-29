@@ -1,0 +1,17 @@
+//
+//  itxecommerce-stage.xcconfig
+//  ITXEcommerce
+//
+//  Created by xdmGzDev on 29/3/26.
+//
+
+#include "itxecommerce-shared.xcconfig"
+
+// Local variable
+ENVIRONMENT = STAGE
+
+INFOPLIST_KEY_CFBundleDisplayName = ITXE-$(ENVIRONMENT)
+INFOPLIST_FILE = $(PRODUCT_NAME)/App/Supporting Files/Info-$(ENVIRONMENT).plist
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon-$(ENVIRONMENT)
+
+OTHER_SWIFT_FLAGS = $(inherited) -DCONF_$(ENVIRONMENT)
