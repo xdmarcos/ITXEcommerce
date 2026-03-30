@@ -10,12 +10,14 @@ import SwiftData
 
 @Model
 final class Cart {
+    #Unique<Cart>([\.userID])
+
     var userID: UUID
 
     @Relationship(deleteRule: .cascade)
     var items: [CartItem]
 
-    public init(userID: UUID, items: [CartItem]) {
+    init(userID: UUID, items: [CartItem]) {
         self.userID = userID
         self.items = items
     }

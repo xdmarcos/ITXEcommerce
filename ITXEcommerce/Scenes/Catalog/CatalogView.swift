@@ -31,7 +31,7 @@ private extension CatalogView {
     func makeCatalogContent() -> some View {
         ScrollView {
             LazyVGrid(columns: gridColumns, spacing: 12) {
-                ForEach(viewModel.products) { product in
+                ForEach(viewModel.filteredProducts) { product in
                     NavigationLink(value: product) {
                         ProductCardView(
                             name: product.name,
@@ -47,9 +47,34 @@ private extension CatalogView {
             .padding(12)
         }
         .scrollIndicators(.hidden)
-        .navigationTitle("Catalog")
+        .navigationTitle("Catalog [\(viewModel.filteredProducts.count)]")
         .navigationDestination(for: Product.self) { product in
             ProductDetailView(product: product)
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                ColumnsSelectorButton(columnCount: viewModel.viewColumns) {
+                    viewModel.columnsSelectorButtonOnTap()
+                }
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                CategorySelectorButton(
+                    selectedCategory: $viewModel.selectedCategory,
+                    allCases: viewModel.allCategories
+                )
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                CartToolbarButton(itemCount: viewModel.cartItemCount) {
+                    viewModel.cartButtonOnTap()
+                }
+            }
+        }
+        .sheet(isPresented: $viewModel.showCartDetail) {
+            CartView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
 }

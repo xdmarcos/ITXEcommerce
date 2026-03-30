@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CartToolbarButton: View {
     private var itemCount = 0
-    var onTap: () -> Void = { }
+    private var onTap: () -> Void = { }
 
     init(itemCount: Int = 0, onTap: @escaping () -> Void = { }) {
         self.itemCount = itemCount
@@ -40,6 +40,8 @@ struct CartToolbarButton: View {
         }
     }
 }
+
+// MARK: - Previews
 
 #Preview {
     VStack(spacing: 30) {

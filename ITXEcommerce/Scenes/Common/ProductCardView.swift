@@ -8,11 +8,19 @@
 import SwiftUI
 
 struct ProductCardView: View {
-    let name: String
-    let brand: String
-    let price: Decimal
-    let currency: String
-    let imageURL: URL?
+    private let name: String
+    private let brand: String
+    private let price: Decimal
+    private let currency: String
+    private let imageURL: URL?
+
+    init(name: String, brand: String, price: Decimal, currency: String, imageURL: URL? = nil) {
+        self.name = name
+        self.brand = brand
+        self.price = price
+        self.currency = currency
+        self.imageURL = imageURL
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

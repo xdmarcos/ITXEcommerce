@@ -8,11 +8,16 @@
 import SwiftUI
 
 struct ImageGalleryView: View {
-    let images: [String]
-    @Binding var currentImageIndex: Int
+    private let images: [String]
+    private var currentImageIndex: Binding<Int>
+
+    init(images: [String], currentImageIndex: Binding<Int>) {
+        self.images = images
+        self.currentImageIndex = currentImageIndex
+    }
 
     var body: some View {
-        TabView(selection: $currentImageIndex) {
+        TabView(selection: currentImageIndex) {
             ForEach(images.indices, id: \.self) { index in
                 AsyncImage(url: URL(string: images[index])) { phase in
                     switch phase {
