@@ -28,7 +28,6 @@ private extension CatalogView {
         Array(repeating: GridItem(.flexible(), spacing: 12), count: viewModel.columnCount)
     }
 
-    @ViewBuilder
     func makeCatalogContent() -> some View {
         ScrollView {
             LazyVGrid(columns: gridColumns, spacing: 12) {

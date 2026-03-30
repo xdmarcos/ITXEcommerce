@@ -14,6 +14,9 @@ final class ProductDetailViewModel {
     var selectedVariant: ProductVariant?
     var selectedSize: ProductSize?
     var currentImageIndex: Int = 0
+    var activeVariant: ProductVariant? {
+        selectedVariant ?? product.variants.first
+    }
 
     init(product: Product) {
         self.product = product

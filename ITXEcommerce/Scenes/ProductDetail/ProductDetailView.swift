@@ -21,7 +21,6 @@ struct ProductDetailView: View {
                 makeInfoSection()
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
-
                 makeAddToCartButton()
                     .padding(.horizontal, 20)
                     .padding(.vertical, 24)
@@ -35,27 +34,14 @@ struct ProductDetailView: View {
 
 private extension ProductDetailView {
     func makeImageGallery() -> some View {
-        // Temp: hardcoded image
-        AsyncImage(url: URL(string: viewModel.product.variants[0].imageURLs[0])) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            default:
-                Rectangle()
-                    .foregroundStyle(.secondary.opacity(0.12))
-                    .overlay {
-                        Image(systemName: "photo")
-                            .foregroundStyle(.tertiary)
-                            .font(.largeTitle)
-                    }
-            }
-        }
+        ImageGalleryView(
+            images: viewModel.activeVariant?.imageURLs ?? [],
+            currentImageIndex: $viewModel.currentImageIndex
+        )
+        .frame(height: 460)
+        .ignoresSafeArea(edges: .horizontal)
     }
-}
 
-private extension ProductDetailView {
     func makeInfoSection() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
