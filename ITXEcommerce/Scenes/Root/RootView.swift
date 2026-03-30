@@ -17,11 +17,6 @@ struct RootView: View {
     }
 }
 
-#Preview {
-    RootView()
-        .modelContainer(for: Item.self, inMemory: true)
-}
-
 private extension RootView {
     @ViewBuilder
     func makeTabs() -> some View {
