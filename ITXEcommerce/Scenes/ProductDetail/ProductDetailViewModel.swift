@@ -21,4 +21,13 @@ final class ProductDetailViewModel {
     init(product: Product) {
         self.product = product
     }
+
+    func selectVariant(_ variant: ProductVariant) {
+        selectedVariant = variant
+    }
+
+    func addToCart() {
+        guard let size = selectedSize, let variant = activeVariant else { return }
+        // TODO
+    }
 }

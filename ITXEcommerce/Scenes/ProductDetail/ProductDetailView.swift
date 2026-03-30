@@ -21,6 +21,9 @@ struct ProductDetailView: View {
                 makeInfoSection()
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
+                makeVariantSection()
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
                 makeAddToCartButton()
                     .padding(.horizontal, 20)
                     .padding(.vertical, 24)
@@ -79,6 +82,46 @@ private extension ProductDetailView {
                 .foregroundStyle(.secondary)
                 .padding(.top, 8)
                 .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    func makeVariantSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Colour")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                if let name = viewModel.activeVariant?.colorName {
+                    Text("— \(name)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 12) {
+                    ForEach(viewModel.product.variants) { variant in
+                        Button {
+                            viewModel.selectVariant(variant)
+                        } label: {
+                            Circle()
+                                .fill(Color(hex: variant.colorHex))
+                                .frame(width: 36, height: 36)
+                                .overlay {
+                                    Circle()
+                                        .strokeBorder(
+                                            viewModel.activeVariant?.id == variant.id ? Color.primary : Color.clear,
+                                            lineWidth: 2
+                                        )
+                                        .padding(-4)
+                                }
+                        }
+                        .accessibilityLabel(variant.colorName)
+                    }
+                }
+                .padding(4)
+            }
+            .scrollIndicators(.hidden)
         }
     }
 

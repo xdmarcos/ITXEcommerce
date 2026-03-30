@@ -23,7 +23,7 @@ enum AppTab {
     var systemImage: String {
         switch self {
         case .catalog: "square.grid.3x3.fill"
-        case .favorites: "star.fill"
+        case .favorites: "bookmark.fill"
         case .settings: "gearshape"
         }
     }
