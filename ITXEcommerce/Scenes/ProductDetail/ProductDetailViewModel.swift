@@ -24,10 +24,19 @@ final class ProductDetailViewModel {
 
     func selectVariant(_ variant: ProductVariant) {
         selectedVariant = variant
+        selectedSize = nil
+    }
+
+    func selectSize(_ size: ProductSize) {
+        selectedSize = size
     }
 
     func addToCart() {
         guard let size = selectedSize, let variant = activeVariant else { return }
         // TODO
+    }
+
+    func isSizeAvailable(_ size: ProductSize) -> Bool {
+        activeVariant?.availableSizes.contains(size) ?? false
     }
 }

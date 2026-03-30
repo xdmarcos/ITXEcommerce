@@ -51,6 +51,7 @@ struct ProductCardView: View {
             }
             .padding(10)
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(.background)
         .clipShape(.rect(cornerRadius: 12))
         .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)

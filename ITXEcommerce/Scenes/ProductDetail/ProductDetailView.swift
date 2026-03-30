@@ -24,6 +24,9 @@ struct ProductDetailView: View {
                 makeVariantSection()
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
+                makeSizeSection()
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
                 makeAddToCartButton()
                     .padding(.horizontal, 20)
                     .padding(.vertical, 24)
@@ -122,6 +125,43 @@ private extension ProductDetailView {
                 .padding(4)
             }
             .scrollIndicators(.hidden)
+        }
+    }
+
+    func makeSizeSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Size")
+                .font(.subheadline)
+                .fontWeight(.medium)
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 8) {
+                    ForEach(ProductSize.allCases, id: \.self) { size in
+                        let isAvailable = viewModel.isSizeAvailable(size)
+                        let isSelected = viewModel.selectedSize == size
+
+                        Button {
+                            viewModel.selectSize(size)
+                        } label: {
+                            Text(size.rawValue)
+                                .font(.subheadline)
+                                .fontWeight(isSelected ? .semibold : .regular)
+                                .frame(minWidth: 52, minHeight: 44)
+                                .background(isSelected ? Color.primary : Color.secondary.opacity(0.1))
+                                .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : isAvailable ? .primary : .primary.opacity(0.3))
+                                .clipShape(.rect(cornerRadius: 8))
+                                .overlay {
+                                    if !isAvailable {
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.secondary.opacity(0.2))
+                                    }
+                                }
+                        }
+                        .disabled(!isAvailable)
+                        .accessibilityLabel("\(size.rawValue)\(isAvailable ? "" : ", unavailable")")
+                    }
+                }
+            }
         }
     }
 
