@@ -8,7 +8,11 @@
 import Foundation
 import SwiftData
 
-enum ProductCategory: String, Codable, CaseIterable, Sendable, Equatable {
+protocol Displayable: Hashable {
+    var displayName: String { get }
+}
+
+enum ProductCategory: String, Codable, CaseIterable, Sendable, Equatable, Displayable {
     case trousers
     case denim
     case hoodies

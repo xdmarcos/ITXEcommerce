@@ -5,11 +5,9 @@
 //  Created by xdmGzDev on 27/3/26.
 //
 
-import SwiftData
 import SwiftUI
 
 struct RootView: View {
-    @Environment(\.modelContext) private var modelContext
     @State private var viewModel: RootViewModel
 
     init() {
