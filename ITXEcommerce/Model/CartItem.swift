@@ -27,6 +27,6 @@ final class CartItem {
         self.selectedSize = selectedSize
         self.selectedVariantId = selectedVariantId
         self.quantity = quantity
-        self.addedAt = Date()
+        self.addedAt = .now
     }
 }

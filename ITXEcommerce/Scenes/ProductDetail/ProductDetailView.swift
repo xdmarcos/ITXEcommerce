@@ -35,6 +35,18 @@ struct ProductDetailView: View {
         .scrollIndicators(.hidden)
         .navigationTitle(viewModel.product.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                CartToolbarButton(itemCount: viewModel.cartItemCount) {
+                    viewModel.cartButtonOnTap()
+                }
+            }
+        }
+        .sheet(isPresented: $viewModel.showCartDetail) {
+            CartView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
 }
 
@@ -148,13 +160,11 @@ private extension ProductDetailView {
                                 .fontWeight(isSelected ? .semibold : .regular)
                                 .frame(minWidth: 52, minHeight: 44)
                                 .background(isSelected ? Color.primary : Color.secondary.opacity(0.1))
-                                .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : isAvailable ? .primary : .primary.opacity(0.3))
+                                .foregroundStyle(isSelected ? Color(.systemBackground) : isAvailable ? .primary : .primary.opacity(0.3))
                                 .clipShape(.rect(cornerRadius: 8))
                                 .overlay {
-                                    if !isAvailable {
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Color.secondary.opacity(0.2))
-                                    }
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.secondary.opacity(isAvailable ? 0 : 0.2))
                                 }
                         }
                         .disabled(!isAvailable)
@@ -167,7 +177,7 @@ private extension ProductDetailView {
 
     func makeAddToCartButton() -> some View {
         Button {
-            // TODO
+            viewModel.addToCart()
         } label: {
             Label("Add to Cart", systemImage: "cart.badge.plus")
                 .font(.headline)

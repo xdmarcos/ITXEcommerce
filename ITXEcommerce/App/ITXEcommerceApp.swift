@@ -14,6 +14,6 @@ struct ITXEcommerceApp: App {
         WindowGroup {
             RootView()
         }
-        .modelContainer(for: [Product.self, CartItem.self])
+        .modelContainer(for: [Product.self, Cart.self, CartItem.self])
     }
 }

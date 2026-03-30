@@ -9,11 +9,10 @@ import SwiftUI
 
 struct CartView: View {
     @Environment(\.dismiss) private var dismiss
-
-    private var viewModel: CartViewModel
+    @State private var viewModel: CartViewModel
 
     init(items: [CartItem] = []) {
-        viewModel = CartViewModel(items: items)
+        self.viewModel = CartViewModel(items: items)
     }
 
     var body: some View {
@@ -47,7 +46,7 @@ private extension CartView {
 
     func makeCartList() -> some View {
         List {
-            ForEach(viewModel.items, id: \.selectedVariantId) { item in
+            ForEach(viewModel.items) { item in
                 CartItemRow(
                     item: item,
                     decreaseQuantity: {
@@ -58,17 +57,17 @@ private extension CartView {
                 )
             }
             .onDelete { indexSet in
-                indexSet.map { viewModel.items[$0] }.forEach { viewModel.remove($0) }
+                viewModel.onDelete(indexSet)
             }
 
-            totalSection
+            makeTotalSection()
                 .listRowInsets(.init())
                 .listRowBackground(Color.clear)
         }
         .listStyle(.plain)
     }
 
-    var totalSection: some View {
+    func makeTotalSection() -> some View {
         VStack(spacing: 16) {
             Divider()
 
@@ -101,7 +100,7 @@ private extension CartView {
 #Preview {
     CartView(
         items: [CartItem(
-            product: Product.mockProducts.first!,
+            product: Product.mockProducts.first!, // swiftlint:disable:this force_unwrapping
             selectedSize: .m,
             selectedVariantId: "TRS-001-BEI",
             quantity: 2

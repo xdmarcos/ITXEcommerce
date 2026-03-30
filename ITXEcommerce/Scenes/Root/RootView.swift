@@ -10,7 +10,11 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var selection: AppTab = .catalog
+    @State private var viewModel: RootViewModel
+
+    init() {
+        self.viewModel = RootViewModel()
+    }
 
     var body: some View {
         makeTabs()
@@ -21,7 +25,7 @@ private extension RootView {
     @ViewBuilder
     func makeTabs() -> some View {
         if #available(iOS 26.0, *) {
-            TabView(selection: $selection) {
+            TabView(selection: $viewModel.selection) {
                 tabs
             }
         } else {

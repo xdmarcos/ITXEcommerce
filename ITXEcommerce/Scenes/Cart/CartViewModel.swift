@@ -63,11 +63,15 @@ final class CartViewModel {
         }
     }
 
-    func remove(_ item: CartItem) {
-        items.removeAll { $0 === item }
+    func onDelete(_ indexSet: IndexSet) {
+        indexSet.map { items[$0] }.forEach { removeItem($0) }
     }
 
     func checkout() {
         // TODO
+    }
+
+    private func removeItem(_ item: CartItem) {
+        items.removeAll { $0 === item }
     }
 }

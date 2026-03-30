@@ -61,9 +61,6 @@ final class Product {
     var currency: String
     var variants: [ProductVariant]
 
-    @Relationship(deleteRule: .cascade)
-    var cartItems: [CartItem]
-
     init(
         productId: String,
         name: String,
@@ -82,6 +79,5 @@ final class Product {
         self.price = price
         self.currency = currency
         self.variants = variants
-        self.cartItems = []
     }
 }

@@ -11,6 +11,9 @@ import Foundation
 final class ProductDetailViewModel {
     let product: Product
 
+    var showCartDetail = false
+    var cartItemCount = 0
+
     var selectedVariant: ProductVariant?
     var selectedSize: ProductSize?
     var currentImageIndex: Int = 0
@@ -33,10 +36,15 @@ final class ProductDetailViewModel {
 
     func addToCart() {
         guard let size = selectedSize, let variant = activeVariant else { return }
-        // TODO
+        cartItemCount += 1
+        debugPrint(size, variant)
     }
 
     func isSizeAvailable(_ size: ProductSize) -> Bool {
         activeVariant?.availableSizes.contains(size) ?? false
+    }
+
+    func cartButtonOnTap() {
+        showCartDetail = true
     }
 }

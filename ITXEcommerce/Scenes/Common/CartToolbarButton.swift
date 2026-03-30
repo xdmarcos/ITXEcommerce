@@ -17,16 +17,10 @@ struct CartToolbarButton: View {
     }
 
     var body: some View {
-        Button {
-            onTap()
-        } label: {
+        Button(action: onTap) {
             cartIcon
         }
-        .accessibilityLabel(
-            itemCount == 0
-                ? "Cart"
-                : "Cart, \(itemCount) \(itemCount == 1 ? "item" : "items")"
-        )
+        .accessibilityLabel(Text("Cart, ^[\(itemCount) item](inflect: true)"))
     }
 
     private var cartIcon: some View {
@@ -37,7 +31,7 @@ struct CartToolbarButton: View {
 
             if itemCount > 0 {
                 Text(itemCount < 100 ? "\(itemCount)" : "99+")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.caption2.bold())
                     .foregroundStyle(.white)
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
