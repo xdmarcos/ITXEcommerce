@@ -10,7 +10,6 @@ import Foundation
 @MainActor
 extension Product {
     static let mockProducts: [Product] = [
-
         Product(
             productId: "TRS-001",
             name: "Slim Chino Trousers",
@@ -28,7 +27,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "TRS-002",
             name: "Wide-Leg Linen Trousers",
@@ -46,7 +44,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "TRS-003",
             name: "Tailored Jogger Trousers",
@@ -63,7 +60,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "DNM-001",
             name: "Straight-Fit Jeans",
@@ -81,7 +77,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "DNM-002",
             name: "Skinny Ripped Jeans",
@@ -98,7 +93,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l])
             ]
         ),
-
         Product(
             productId: "DNM-003",
             name: "Wide-Leg Vintage Jeans",
@@ -116,7 +110,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "HOD-001",
             name: "Oversized Fleece Hoodie",
@@ -133,7 +126,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "HOD-002",
             name: "Zip-Up Tech Hoodie",
@@ -151,7 +143,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "HOD-003",
             name: "Cropped Graphic Hoodie",
@@ -168,7 +159,6 @@ extension Product {
                                availableSizes: [.xxs, .xs, .s, .m])
             ]
         ),
-
         Product(
             productId: "JKT-001",
             name: "Leather Biker Jacket",
@@ -186,7 +176,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "JKT-002",
             name: "Quilted Puffer Jacket",
@@ -203,7 +192,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l])
             ]
         ),
-
         Product(
             productId: "JKT-003",
             name: "Structured Blazer Jacket",
@@ -221,7 +209,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "SHT-001",
             name: "Oversized Oxford Shirt",
@@ -238,7 +225,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "SHT-002",
             name: "Slim Flannel Check Shirt",
@@ -256,7 +242,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "SHT-003",
             name: "Linen Resort Shirt",
@@ -273,7 +258,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "SHO-001",
             name: "Leather Chunky Sneakers",
@@ -291,7 +275,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "SHO-002",
             name: "Suede Chelsea Boots",
@@ -308,7 +291,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "SHO-003",
             name: "Canvas Espadrille Loafers",
@@ -325,7 +307,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "ACC-001",
             name: "Ribbed Knit Beanie",
@@ -345,7 +326,6 @@ extension Product {
                                availableSizes: [.s, .m, .l])
             ]
         ),
-
         Product(
             productId: "ACC-002",
             name: "Leather Belt",
@@ -362,7 +342,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "TRS-004",
             name: "Cargo Utility Trousers",
@@ -380,7 +359,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl])
             ]
         ),
-
         Product(
             productId: "DNM-004",
             name: "Slim Tapered Jeans",
@@ -398,7 +376,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "HOD-004",
             name: "Washed Pullover Hoodie",
@@ -415,7 +392,6 @@ extension Product {
                                availableSizes: [.xxs, .xs, .s, .m, .l])
             ]
         ),
-
         Product(
             productId: "JKT-004",
             name: "Denim Trucker Jacket",
@@ -433,7 +409,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "SHT-004",
             name: "Poplin Utility Shirt",
@@ -450,7 +425,6 @@ extension Product {
                                availableSizes: [.xs, .s, .m, .l])
             ]
         ),
-
         Product(
             productId: "SHO-004",
             name: "Leather Derby Shoes",
@@ -468,7 +442,6 @@ extension Product {
                                availableSizes: [.s, .m, .l, .xl, .xxl])
             ]
         ),
-
         Product(
             productId: "ACC-003",
             name: "Woven Bucket Hat",
@@ -485,7 +458,6 @@ extension Product {
                                availableSizes: [.s, .m, .l])
             ]
         ),
-
         Product(
             productId: "ACC-004",
             name: "Merino Wool Scarf",
@@ -505,7 +477,6 @@ extension Product {
                                availableSizes: [.s, .m, .l])
             ]
         ),
-
         Product(
             productId: "ACC-005",
             name: "Canvas Tote Bag",

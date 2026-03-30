@@ -6,3 +6,9 @@
 //
 
 import Foundation
+
+@Observable
+final class CatalogViewModel {
+    var products: [Product] = Product.mockProducts
+    var columnCount: Int = 2
+}
