@@ -50,7 +50,7 @@ private extension CatalogView {
         .scrollIndicators(.hidden)
         .navigationTitle("Catalog")
         .navigationDestination(for: Product.self) { product in
-            Text("Product Detail \(product.name)")
+            ProductDetailView(product: product)
         }
     }
 }

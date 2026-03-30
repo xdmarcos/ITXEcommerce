@@ -15,6 +15,11 @@ line_length:
   ignores_comments: true
   ignores_urls: true
 
+# ── File length ────────────────────────────────────────────────────────────────
+file_length:
+  warning: 500
+  error: 600
+
 # ── Identifier names ───────────────────────────────────────────────────────────
 # Allow short RGB/alpha channel names and 2-letter locale codes (es, gl, en)
 identifier_name:
