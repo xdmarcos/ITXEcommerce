@@ -16,6 +16,24 @@ struct ProductCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            AsyncImage(url: imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                default:
+                    Rectangle()
+                        .foregroundStyle(.secondary.opacity(0.12))
+                        .overlay {
+                            Image(systemName: "photo")
+                                .foregroundStyle(.tertiary)
+                        }
+                }
+            }
+            .aspectRatio(3/4, contentMode: .fit)
+            .clipped()
+
             VStack(alignment: .leading, spacing: 3) {
                 Text(brand)
                     .font(.caption)
@@ -34,6 +52,8 @@ struct ProductCardView: View {
             .padding(10)
         }
         .background(.background)
+        .clipShape(.rect(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
     }
 }
 
