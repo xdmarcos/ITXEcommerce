@@ -1,0 +1,9 @@
+//
+//  itxecommerce-shared.xcconfig
+//  ITXEcommerce
+//
+//  Created by xdmGzDev on 29/3/26.
+//
+
+SHARED_CODE_DISAMBIGUATOR = $(DEVELOPMENT_TEAM)
+PRODUCT_NAME = $(TARGET_NAME)

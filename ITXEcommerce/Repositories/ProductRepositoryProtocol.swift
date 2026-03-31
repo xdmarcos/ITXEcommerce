@@ -1,0 +1,14 @@
+//
+//  ProductRepositoryProtocol.swift
+//  ITXEcommerce
+//
+//  Created by xdmGzDev on 30/3/26.
+//
+
+import Foundation
+
+@MainActor
+protocol ProductRepositoryProtocol {
+    func fetchAll() async throws -> [Product]
+    func fetch(category: ProductCategory?) async throws -> [Product]
+}
