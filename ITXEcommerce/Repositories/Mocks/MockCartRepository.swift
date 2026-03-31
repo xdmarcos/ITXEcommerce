@@ -10,11 +10,11 @@ import Foundation
 final class MockCartRepository: CartRepositoryProtocol {
     private(set) var storedItems: [CartItem] = []
 
-    func fetchItems() throws -> [CartItem] {
+    func fetchItems() async throws -> [CartItem] {
         storedItems
     }
 
-    func add(product: Product, size: ProductSize, variantId: String) throws {
+    func add(product: Product, size: ProductSize, variantId: String) async throws {
         if let existing = storedItems.first(where: {
             $0.product?.productId == product.productId &&
             $0.selectedSize == size &&
@@ -26,15 +26,15 @@ final class MockCartRepository: CartRepositoryProtocol {
         }
     }
 
-    func updateQuantity(_ item: CartItem, to quantity: Int) throws {
+    func updateQuantity(_ item: CartItem, to quantity: Int) async throws {
         item.quantity = quantity
     }
 
-    func remove(_ item: CartItem) throws {
+    func remove(_ item: CartItem) async throws {
         storedItems.removeAll { $0 === item }
     }
 
-    func clear() throws {
+    func clear() async throws {
         storedItems.removeAll()
     }
 }

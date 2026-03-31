@@ -14,11 +14,11 @@ final class MockProductRepository: ProductRepositoryProtocol {
         self.products = products
     }
 
-    func fetchAll() throws -> [Product] {
+    func fetchAll() async throws -> [Product] {
         products
     }
 
-    func fetch(category: ProductCategory?) throws -> [Product] {
+    func fetch(category: ProductCategory?) async throws -> [Product] {
         guard let category else { return products }
         return products.filter { $0.category == category }
     }

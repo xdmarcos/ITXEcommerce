@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 
+@MainActor
 final class ProductRepository: ProductRepositoryProtocol {
     private let modelContext: ModelContext
 
@@ -15,13 +16,13 @@ final class ProductRepository: ProductRepositoryProtocol {
         self.modelContext = modelContext
     }
 
-    func fetchAll() throws -> [Product] {
+    func fetchAll() async throws -> [Product] {
 //        try modelContext.fetch(FetchDescriptor<Product>())
         Product.mockProducts
     }
 
-    func fetch(category: ProductCategory?) throws -> [Product] {
-        guard let category else { return try fetchAll() }
+    func fetch(category: ProductCategory?) async throws -> [Product] {
+        guard let category else { return try await fetchAll() }
         let descriptor = FetchDescriptor<Product>(
             predicate: #Predicate { $0.category == category }
         )

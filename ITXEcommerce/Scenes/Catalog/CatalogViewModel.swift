@@ -45,8 +45,12 @@ final class CatalogViewModel {
     }
 
     func reload() {
+        Task { await fetchProducts() }
+    }
+
+    private func fetchProducts() async {
         do {
-            products = try repository.fetchAll()
+            products = try await repository.fetchAll()
             loadError = nil
         } catch {
             loadError = error
@@ -54,11 +58,13 @@ final class CatalogViewModel {
     }
 
     private func reload(for category: ProductCategory?) {
-        do {
-            products = try repository.fetch(category: category)
-            loadError = nil
-        } catch {
-            loadError = error
+        Task {
+            do {
+                products = try await repository.fetch(category: category)
+                loadError = nil
+            } catch {
+                loadError = error
+            }
         }
     }
 }

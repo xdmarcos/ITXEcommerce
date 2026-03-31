@@ -15,7 +15,7 @@ final class CartViewModel {
 
     init(repository: any CartRepositoryProtocol) {
         self.repository = repository
-        reload()
+        Task { await reload() }
     }
 
     var itemCount: Int {
@@ -33,42 +33,50 @@ final class CartViewModel {
     }
 
     func add(product: Product, size: ProductSize, variantId: String) {
-        do {
-            try repository.add(product: product, size: size, variantId: variantId)
-            reload()
-        } catch {
-            lastError = error
+        Task {
+            do {
+                try await repository.add(product: product, size: size, variantId: variantId)
+                await reload()
+            } catch {
+                lastError = error
+            }
         }
     }
 
     func increaseQuantity(_ item: CartItem) {
-        do {
-            try repository.updateQuantity(item, to: item.quantity + 1)
-            reload()
-        } catch {
-            lastError = error
+        Task {
+            do {
+                try await repository.updateQuantity(item, to: item.quantity + 1)
+                await reload()
+            } catch {
+                lastError = error
+            }
         }
     }
 
     func decreaseQuantity(_ item: CartItem) {
-        do {
-            if item.quantity > 1 {
-                try repository.updateQuantity(item, to: item.quantity - 1)
-            } else {
-                try repository.remove(item)
+        Task {
+            do {
+                if item.quantity > 1 {
+                    try await repository.updateQuantity(item, to: item.quantity - 1)
+                } else {
+                    try await repository.remove(item)
+                }
+                await reload()
+            } catch {
+                lastError = error
             }
-            reload()
-        } catch {
-            lastError = error
         }
     }
 
     func remove(_ item: CartItem) {
-        do {
-            try repository.remove(item)
-            reload()
-        } catch {
-            lastError = error
+        Task {
+            do {
+                try await repository.remove(item)
+                await reload()
+            } catch {
+                lastError = error
+            }
         }
     }
 
@@ -84,9 +92,9 @@ final class CartViewModel {
         // TODO: implement checkout flow
     }
 
-    private func reload() {
+    private func reload() async {
         do {
-            items = try repository.fetchItems()
+            items = try await repository.fetchItems()
         } catch {
             lastError = error
         }
