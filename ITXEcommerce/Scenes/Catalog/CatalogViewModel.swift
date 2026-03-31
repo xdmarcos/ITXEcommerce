@@ -12,8 +12,6 @@ final class CatalogViewModel {
     private let repository: any ProductRepositoryProtocol
     private(set) var products: [Product] = []
     private(set) var loadError: Error?
-
-    @ObservationIgnored
     private(set) var loadTask: Task<Void, Never>?
 
     let allCategories = ProductCategory.allCases
@@ -22,6 +20,7 @@ final class CatalogViewModel {
     var selectedProduct: Product?
     var showCartDetail = false
     var showErrorAlert = false
+    var firstLoadCompleted = false
 
     init(repository: any ProductRepositoryProtocol) {
         self.repository = repository
@@ -35,6 +34,17 @@ final class CatalogViewModel {
     var filteredProducts: [Product] {
         guard let category = selectedCategory else { return products }
         return products.filter { $0.category == category }
+    }
+
+    @discardableResult
+    func onFirstAppear() -> Task<Void, Never> {
+        if let loadTask { return loadTask }
+        let task = Task {
+            defer { firstLoadCompleted = true }
+            await self.fetchProducts()
+        }
+        loadTask = task
+        return task
     }
 
     func clearLoadError() {
@@ -53,7 +63,6 @@ final class CatalogViewModel {
     @discardableResult
     func reload() -> Task<Void, Never> {
         let task = Task { await fetchProducts() }
-        loadTask = task
         return task
     }
 

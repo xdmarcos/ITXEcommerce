@@ -12,9 +12,8 @@ final class CartViewModel {
     private let repository: any CartRepositoryProtocol
     private(set) var items: [CartItem] = []
     private(set) var lastError: Error?
-
-    @ObservationIgnored
     private(set) var loadTask: Task<Void, Never>?
+    var firstLoadCompleted = false
 
     init(repository: any CartRepositoryProtocol) {
         self.repository = repository
@@ -33,6 +32,17 @@ final class CartViewModel {
 
     var currency: String {
         items.first?.product?.currency ?? "EUR"
+    }
+
+    @discardableResult
+    func onFirstAppear() -> Task<Void, Never> {
+        if let loadTask { return loadTask }
+        let task = Task {
+            defer { firstLoadCompleted = true }
+            await self.reload()
+        }
+        loadTask = task
+        return task
     }
 
     @discardableResult

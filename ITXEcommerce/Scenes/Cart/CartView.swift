@@ -20,6 +20,9 @@ struct CartView: View {
                     makeCartList()
                 }
             }
+            .task {
+                cartViewModel.onFirstAppear()
+            }
             .navigationTitle("My Cart")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -40,6 +43,7 @@ struct CartView: View {
                 Text(error.localizedDescription)
             }
         }
+
     }
 }
 

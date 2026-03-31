@@ -18,7 +18,10 @@ struct CatalogView: View {
     var body: some View {
         NavigationSplitView {
             CatalogGridView(viewModel: viewModel)
-                .navigationTitle("Catalog [\(viewModel.filteredProducts.count)]")
+                .task {
+                    viewModel.onFirstAppear()
+                }
+                .navigationTitle(viewModel.filteredProducts.isEmpty ? "Catalog" : "Catalog [\(viewModel.filteredProducts.count)]")
                 .navigationDestination(for: Product.self) { product in
                     ProductDetailView(product: product)
                         .id(product.productId)
