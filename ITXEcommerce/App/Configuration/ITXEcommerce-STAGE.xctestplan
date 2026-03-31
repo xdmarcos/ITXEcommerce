@@ -1,0 +1,30 @@
+{
+  "configurations" : [
+    {
+      "id" : "BF869175-00F1-42C8-AA05-928C785525C3",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:ITXEcommerce.xcodeproj",
+      "identifier" : "7AAFF7D52F76D6AE00C9B9A8",
+      "name" : "ITXEcommerce"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:ITXEcommerce.xcodeproj",
+        "identifier" : "7AAFF7E62F76D6AF00C9B9A8",
+        "name" : "ITXEcommerceTests"
+      }
+    }
+  ],
+  "version" : 1
+}

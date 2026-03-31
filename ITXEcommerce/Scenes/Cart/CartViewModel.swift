@@ -13,9 +13,12 @@ final class CartViewModel {
     private(set) var items: [CartItem] = []
     private(set) var lastError: Error?
 
+    @ObservationIgnored
+    private(set) var loadTask: Task<Void, Never>?
+
     init(repository: any CartRepositoryProtocol) {
         self.repository = repository
-        Task { await reload() }
+        loadTask = Task { await self.reload() }
     }
 
     var itemCount: Int {
@@ -32,7 +35,8 @@ final class CartViewModel {
         items.first?.product?.currency ?? "EUR"
     }
 
-    func add(product: Product, size: ProductSize, variantId: String) {
+    @discardableResult
+    func add(product: Product, size: ProductSize, variantId: String) -> Task<Void, Never> {
         Task {
             do {
                 try await repository.add(product: product, size: size, variantId: variantId)
@@ -43,7 +47,8 @@ final class CartViewModel {
         }
     }
 
-    func increaseQuantity(_ item: CartItem) {
+    @discardableResult
+    func increaseQuantity(_ item: CartItem) -> Task<Void, Never> {
         Task {
             do {
                 try await repository.updateQuantity(item, to: item.quantity + 1)
@@ -54,7 +59,8 @@ final class CartViewModel {
         }
     }
 
-    func decreaseQuantity(_ item: CartItem) {
+    @discardableResult
+    func decreaseQuantity(_ item: CartItem) -> Task<Void, Never> {
         Task {
             do {
                 if item.quantity > 1 {
@@ -69,7 +75,8 @@ final class CartViewModel {
         }
     }
 
-    func remove(_ item: CartItem) {
+    @discardableResult
+    func remove(_ item: CartItem) -> Task<Void, Never> {
         Task {
             do {
                 try await repository.remove(item)
@@ -80,8 +87,14 @@ final class CartViewModel {
         }
     }
 
-    func onDelete(_ indexSet: IndexSet) {
-        indexSet.map { items[$0] }.forEach { remove($0) }
+    @discardableResult
+    func onDelete(_ indexSet: IndexSet) -> Task<Void, Never> {
+        let itemsToDelete = indexSet.map { items[$0] }
+        return Task {
+            for item in itemsToDelete {
+                await remove(item).value
+            }
+        }
     }
 
     func clearLastError() {
