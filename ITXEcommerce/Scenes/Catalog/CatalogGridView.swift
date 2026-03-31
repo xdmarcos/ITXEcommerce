@@ -20,11 +20,12 @@ struct CatalogGridView: View {
                 ForEach(viewModel.filteredProducts) { product in
                     NavigationLink(value: product) {
                         ProductCardView(
-                            name: product.name,
+                            title: product.title,
                             brand: product.brand,
+                            category: product.category,
                             price: product.price,
-                            currency: product.currency,
-                            imageURL: product.variants.first?.imageURLs.first.flatMap { URL(string: $0) }
+                            imageURL: URL(string: product.thumbnail),
+                            isCompact: viewModel.columnCount == 3
                         )
                     }
                     .buttonStyle(.plain)

@@ -24,7 +24,7 @@ struct CartItemRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            AsyncImage(url: imageURL) { phase in
+            AsyncImage(url: URL(string: item.product?.thumbnail ?? "")) { phase in
                 switch phase {
                 case .success(let image):
                     image.resizable().aspectRatio(contentMode: .fill)
@@ -40,35 +40,21 @@ struct CartItemRow: View {
                     Text(product.brand)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text(product.name)
+                    Text(product.title)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                    Text(product.price, format: .currency(code: product.currency))
+                    Text(product.price, format: .currency(code: "EUR"))
                         .font(.subheadline)
                 }
 
-                HStack(spacing: 6) {
-                    Text(item.selectedSize.rawValue)
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(.secondary.opacity(0.12))
-                        .clipShape(.rect(cornerRadius: 6))
-
+                HStack {
                     Spacer()
-
                     quantityControls
                 }
                 .padding(.top, 4)
             }
         }
         .padding(.vertical, 6)
-    }
-
-    private var imageURL: URL? {
-        let variant = item.product?.variants.first { $0.id == item.selectedVariantId }
-            ?? item.product?.variants.first
-        return variant?.imageURLs.first.flatMap(URL.init)
     }
 
     private var quantityControls: some View {
@@ -103,9 +89,7 @@ struct CartItemRow: View {
 #Preview {
     CartItemRow(
         item: CartItem(
-            product: Product.mockProducts.first!,// swiftlint:disable:this force_unwrapping
-            selectedSize: .m,
-            selectedVariantId: "TRS-001-BEI",
+            product: Product.mockProducts.first!, // swiftlint:disable:this force_unwrapping
             quantity: 2
         )
     )

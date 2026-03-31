@@ -14,15 +14,11 @@ final class MockCartRepository: CartRepositoryProtocol {
         storedItems
     }
 
-    func add(product: Product, size: ProductSize, variantId: String) async throws {
-        if let existing = storedItems.first(where: {
-            $0.product?.productId == product.productId &&
-            $0.selectedSize == size &&
-            $0.selectedVariantId == variantId
-        }) {
+    func add(product: Product) async throws {
+        if let existing = storedItems.first(where: { $0.product?.productId == product.productId }) {
             existing.quantity += 1
         } else {
-            storedItems.append(CartItem(product: product, selectedSize: size, selectedVariantId: variantId))
+            storedItems.append(CartItem(product: product))
         }
     }
 

@@ -39,8 +39,8 @@ struct CategorySelectorButton<SelectionValue: Displayable>: View {
     CategorySelectorButton(
         selectedCategory: .constant(.none),
         allCases: [
-            ProductCategory(rawValue: "denim")!, // swiftlint:disable:this force_unwrapping
-            ProductCategory(rawValue: "shirt")! // swiftlint:disable:this force_unwrapping
+            ProductCategory(rawValue: "miscellaneous")!, // swiftlint:disable:this force_unwrapping
+            ProductCategory(rawValue: "beauty")! // swiftlint:disable:this force_unwrapping
         ]
     )
 }

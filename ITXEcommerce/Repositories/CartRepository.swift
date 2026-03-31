@@ -20,16 +20,12 @@ final class CartRepository: CartRepositoryProtocol {
         try modelContext.fetch(FetchDescriptor<CartItem>())
     }
 
-    func add(product: Product, size: ProductSize, variantId: String) async throws {
+    func add(product: Product) async throws {
         let items = try await fetchItems()
-        if let existing = items.first(where: {
-            $0.product?.productId == product.productId &&
-            $0.selectedSize == size &&
-            $0.selectedVariantId == variantId
-        }) {
+        if let existing = items.first(where: { $0.product?.productId == product.productId }) {
             existing.quantity += 1
         } else {
-            modelContext.insert(CartItem(product: product, selectedSize: size, selectedVariantId: variantId))
+            modelContext.insert(CartItem(product: product))
         }
         try modelContext.save()
     }

@@ -8,52 +8,75 @@
 import SwiftUI
 
 struct ProductCardView: View {
-    private let name: String
+    private let title: String
     private let brand: String
+    private let category: ProductCategory
     private let price: Decimal
-    private let currency: String
     private let imageURL: URL?
+    private let isCompact: Bool
 
-    init(name: String, brand: String, price: Decimal, currency: String, imageURL: URL? = nil) {
-        self.name = name
+    init(
+        title: String,
+        brand: String,
+        category: ProductCategory,
+        price: Decimal,
+        imageURL: URL? = nil,
+        isCompact: Bool = false
+    ) {
+        self.title = title
         self.brand = brand
+        self.category = category
         self.price = price
-        self.currency = currency
         self.imageURL = imageURL
+        self.isCompact = isCompact
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            AsyncImage(url: imageURL) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                default:
-                    Rectangle()
-                        .foregroundStyle(.secondary.opacity(0.12))
-                        .overlay {
+            Rectangle()
+                .foregroundStyle(.secondary.opacity(0.12))
+                .aspectRatio(3/4, contentMode: .fit)
+                .overlay {
+                    AsyncImage(url: imageURL) { phase in
+                        if case .success(let image) = phase {
+                            image.resizable().scaledToFit()
+                        } else {
                             Image(systemName: "photo")
                                 .foregroundStyle(.tertiary)
                         }
+                    }
                 }
-            }
-            .aspectRatio(3/4, contentMode: .fit)
-            .clipped()
+                .clipped()
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(brand)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    if isCompact {
+                        Circle()
+                            .fill(category.color)
+                            .frame(width: 8, height: 8)
+                    } else {
+                        Text(category.displayName)
+                            .font(.caption)
+                            .foregroundStyle(category.color)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(category.color.opacity(0.15))
+                            .clipShape(.capsule)
+                    }
 
-                Text(name)
+                    Text(brand)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .lineLimit(2)
+
+                Text(title)
                     .font(.callout)
                     .fontWeight(.medium)
                     .lineLimit(2)
                     .foregroundStyle(.primary)
 
-                Text(price, format: .currency(code: currency))
+                Text(price, format: .currency(code: "EUR"))
                     .font(.callout)
                     .foregroundStyle(.primary)
             }
@@ -68,14 +91,25 @@ struct ProductCardView: View {
 
 // MARK: - Previews
 
-#Preview("Card") {
+#Preview("Card – Default") {
     ProductCardView(
-        name: "Slim Chino Trousers",
+        title: "Slim Chino Trousers",
         brand: "Zara",
-        price: 39.95,
-        currency: "EUR",
-        imageURL: nil
+        category: .tops,
+        price: 39.95
     )
     .frame(width: 180)
+    .padding()
+}
+
+#Preview("Card – Compact") {
+    ProductCardView(
+        title: "Slim Chino Trousers",
+        brand: "Zara",
+        category: .tops,
+        price: 39.95,
+        isCompact: true
+    )
+    .frame(width: 120)
     .padding()
 }

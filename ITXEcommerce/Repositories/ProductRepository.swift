@@ -23,7 +23,7 @@ final class ProductRepository: ProductRepositoryProtocol {
 //        Product.mockProducts
         do {
             let response = try await apiClient.asyncRequest(
-                endpoint: DummyJsonEndpointProvider.getProducts(pagination: nil),
+                endpoint: DummyJsonEndpointProvider.getProducts(pagination: .init(limit: 0, skip: nil)),
                 responseModel: ProductsDTO.self
             )
             debugPrint("response: \(response)")
@@ -44,17 +44,20 @@ final class ProductRepository: ProductRepositoryProtocol {
 
 extension ProductsDTO {
     func asProducts() -> [Product] {
-        let variants = [ProductVariant]()
-        return products.map { dto in
+        products.map { dto in
             Product(
                 productId: dto.sku,
-                name: dto.title,
+                title: dto.title,
                 brand: dto.brand ?? "Generic",
                 productDescription: dto.description,
-                category: .denim,
+                category: ProductCategory(rawValue: dto.category) ?? .tops,
                 price: Decimal(dto.price),
-                currency: "EUR",
-                variants: variants
+                discountPercentage: dto.discountPercentage,
+                rating: dto.rating,
+                stock: dto.stock,
+                tags: dto.tags,
+                thumbnail: dto.thumbnail,
+                images: dto.images
             )
         }
     }

@@ -30,9 +30,7 @@ final class CartViewModel {
         }
     }
 
-    var currency: String {
-        items.first?.product?.currency ?? "EUR"
-    }
+    let currency: String = "EUR"
 
     @discardableResult
     func onFirstAppear() -> Task<Void, Never> {
@@ -46,10 +44,10 @@ final class CartViewModel {
     }
 
     @discardableResult
-    func add(product: Product, size: ProductSize, variantId: String) -> Task<Void, Never> {
+    func add(product: Product) -> Task<Void, Never> {
         Task {
             do {
-                try await repository.add(product: product, size: size, variantId: variantId)
+                try await repository.add(product: product)
                 await reload()
             } catch {
                 lastError = error
