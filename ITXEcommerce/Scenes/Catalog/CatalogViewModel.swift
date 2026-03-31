@@ -13,6 +13,9 @@ final class CatalogViewModel {
     private(set) var products: [Product] = []
     private(set) var loadError: Error?
 
+    @ObservationIgnored
+    private(set) var loadTask: Task<Void, Never>?
+
     let allCategories = ProductCategory.allCases
     var columnCount: Int = 2
     var selectedCategory: ProductCategory?
@@ -22,7 +25,7 @@ final class CatalogViewModel {
 
     init(repository: any ProductRepositoryProtocol) {
         self.repository = repository
-        reload()
+        loadTask = Task { await self.fetchProducts() }
     }
 
     var viewColumns: ColumnsSelectorButton.ColumnsCount {
@@ -47,8 +50,11 @@ final class CatalogViewModel {
         columnCount = columnCount == 2 ? 3 : 2
     }
 
-    func reload() {
-        Task { await fetchProducts() }
+    @discardableResult
+    func reload() -> Task<Void, Never> {
+        let task = Task { await fetchProducts() }
+        loadTask = task
+        return task
     }
 
     private func fetchProducts() async {
