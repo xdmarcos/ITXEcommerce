@@ -82,6 +82,19 @@ private extension CatalogView {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
+        .alert(
+            "Failed to load products",
+            isPresented: Binding(
+                get: { viewModel.loadError != nil },
+                set: { if !$0 { viewModel.clearLoadError() } }
+            ),
+            presenting: viewModel.loadError
+        ) { _ in
+            Button("Retry") { viewModel.reload() }
+            Button("OK", role: .cancel) { viewModel.clearLoadError() }
+        } message: { error in
+            Text(error.localizedDescription)
+        }
     }
 }
 

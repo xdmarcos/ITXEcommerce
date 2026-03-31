@@ -11,6 +11,7 @@ import Foundation
 final class CartViewModel {
     private let repository: any CartRepositoryProtocol
     private(set) var items: [CartItem] = []
+    private(set) var lastError: Error?
 
     init(repository: any CartRepositoryProtocol) {
         self.repository = repository
@@ -32,31 +33,51 @@ final class CartViewModel {
     }
 
     func add(product: Product, size: ProductSize, variantId: String) {
-        try? repository.add(product: product, size: size, variantId: variantId)
-        reload()
+        do {
+            try repository.add(product: product, size: size, variantId: variantId)
+            reload()
+        } catch {
+            lastError = error
+        }
     }
 
     func increaseQuantity(_ item: CartItem) {
-        try? repository.updateQuantity(item, to: item.quantity + 1)
-        reload()
+        do {
+            try repository.updateQuantity(item, to: item.quantity + 1)
+            reload()
+        } catch {
+            lastError = error
+        }
     }
 
     func decreaseQuantity(_ item: CartItem) {
-        if item.quantity > 1 {
-            try? repository.updateQuantity(item, to: item.quantity - 1)
-        } else {
-            try? repository.remove(item)
+        do {
+            if item.quantity > 1 {
+                try repository.updateQuantity(item, to: item.quantity - 1)
+            } else {
+                try repository.remove(item)
+            }
+            reload()
+        } catch {
+            lastError = error
         }
-        reload()
     }
 
     func remove(_ item: CartItem) {
-        try? repository.remove(item)
-        reload()
+        do {
+            try repository.remove(item)
+            reload()
+        } catch {
+            lastError = error
+        }
     }
 
     func onDelete(_ indexSet: IndexSet) {
         indexSet.map { items[$0] }.forEach { remove($0) }
+    }
+
+    func clearLastError() {
+        lastError = nil
     }
 
     func checkout() {
@@ -64,6 +85,10 @@ final class CartViewModel {
     }
 
     private func reload() {
-        items = (try? repository.fetchItems()) ?? []
+        do {
+            items = try repository.fetchItems()
+        } catch {
+            lastError = error
+        }
     }
 }

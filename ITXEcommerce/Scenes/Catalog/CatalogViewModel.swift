@@ -11,6 +11,7 @@ import Foundation
 final class CatalogViewModel {
     private let repository: any ProductRepositoryProtocol
     private(set) var products: [Product] = []
+    private(set) var loadError: Error?
 
     let allCategories = ProductCategory.allCases
     var columnCount: Int = 2
@@ -31,6 +32,10 @@ final class CatalogViewModel {
         return products.filter { $0.category == category }
     }
 
+    func clearLoadError() {
+        loadError = nil
+    }
+
     func cartButtonOnTap() {
         showCartDetail = true
     }
@@ -40,10 +45,20 @@ final class CatalogViewModel {
     }
 
     func reload() {
-        products = (try? repository.fetchAll()) ?? []
+        do {
+            products = try repository.fetchAll()
+            loadError = nil
+        } catch {
+            loadError = error
+        }
     }
 
     private func reload(for category: ProductCategory?) {
-        products = (try? repository.fetch(category: category)) ?? []
+        do {
+            products = try repository.fetch(category: category)
+            loadError = nil
+        } catch {
+            loadError = error
+        }
     }
 }

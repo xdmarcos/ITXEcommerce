@@ -12,12 +12,14 @@ import SwiftUI
 struct ITXEcommerceApp: App {
     private let container: ModelContainer
     private let cartViewModel: CartViewModel
+    private let productRepository: any ProductRepositoryProtocol
 
     init() {
         do {
             let container = try ModelContainer(for: Product.self, CartItem.self)
             self.container = container
             self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
+            self.productRepository = ProductRepository(modelContext: container.mainContext)
         } catch {
             fatalError("ModelContainer init failed: \(error)")
         }
@@ -27,6 +29,7 @@ struct ITXEcommerceApp: App {
         WindowGroup {
             RootView()
                 .environment(cartViewModel)
+                .environment(\.productRepository, productRepository)
         }
         .modelContainer(container)
     }
