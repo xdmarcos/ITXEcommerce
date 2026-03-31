@@ -29,9 +29,9 @@ private extension RootView {
                     .tabItem {
                         Label(AppTab.catalog.title, systemImage: AppTab.catalog.systemImage)
                     }
-                FavoritesView()
+                QuickStartView()
                     .tabItem {
-                        Label(AppTab.favorites.title, systemImage: AppTab.favorites.systemImage)
+                        Label(AppTab.quickStart.title, systemImage: AppTab.quickStart.systemImage)
                     }
                 SettingsView()
                     .tabItem {
@@ -45,7 +45,7 @@ private extension RootView {
     @TabContentBuilder<AppTab>
     var tabs: some TabContent<AppTab> {
         catalogTab
-        favoritesTab
+        quickStartTab
         settingsTab
     }
 
@@ -61,13 +61,13 @@ private extension RootView {
     }
 
     @available(iOS 26.0, *)
-    var favoritesTab: some TabContent<AppTab> {
+    var quickStartTab: some TabContent<AppTab> {
         Tab(
-            AppTab.favorites.title,
-            systemImage: AppTab.favorites.systemImage,
-            value: .favorites
+            AppTab.quickStart.title,
+            systemImage: AppTab.quickStart.systemImage,
+            value: .quickStart
         ) {
-            FavoritesView()
+            QuickStartView()
         }
     }
 

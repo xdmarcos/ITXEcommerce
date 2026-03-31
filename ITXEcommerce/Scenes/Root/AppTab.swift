@@ -9,13 +9,13 @@ import Foundation
 
 enum AppTab {
     case catalog
-    case favorites
+    case quickStart
     case settings
 
     var title: LocalizedStringResource {
         switch self {
         case .catalog: "Catalog"
-        case .favorites: "Favorites"
+        case .quickStart: "Quick Start"
         case .settings: "Settings"
         }
     }
@@ -23,7 +23,7 @@ enum AppTab {
     var systemImage: String {
         switch self {
         case .catalog: "square.grid.3x3.fill"
-        case .favorites: "bookmark.fill"
+        case .quickStart: "info.bubble.fill"
         case .settings: "gearshape"
         }
     }

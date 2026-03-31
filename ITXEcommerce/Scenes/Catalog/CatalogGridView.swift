@@ -27,6 +27,7 @@ struct CatalogGridView: View {
                             imageURL: product.variants.first?.imageURLs.first.flatMap { URL(string: $0) }
                         )
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(12)
