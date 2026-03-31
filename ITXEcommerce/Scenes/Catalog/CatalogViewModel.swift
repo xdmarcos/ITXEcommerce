@@ -15,8 +15,10 @@ final class CatalogViewModel {
     private(set) var loadTask: Task<Void, Never>?
 
     let allCategories = ProductCategory.allCases
+    let allSortOption = ProductSortOption.allCases
     var columnCount: Int = 2
     var selectedCategory: ProductCategory?
+    var selectedSort: ProductSortOption?
     var selectedProduct: Product?
     var showCartDetail = false
     var showErrorAlert = false
@@ -32,8 +34,14 @@ final class CatalogViewModel {
     }
 
     var filteredProducts: [Product] {
-        guard let category = selectedCategory else { return products }
-        return products.filter { $0.category == category }
+        let filtered = selectedCategory.map { cat in products.filter { $0.category == cat } } ?? products
+        switch selectedSort {
+        case .none:          return filtered
+        case .categoryAZ:    return filtered.sorted { $0.category.displayName < $1.category.displayName }
+        case .categoryZA:    return filtered.sorted { $0.category.displayName > $1.category.displayName }
+        case .priceLowHigh:  return filtered.sorted { $0.price < $1.price }
+        case .priceHighLow:  return filtered.sorted { $0.price > $1.price }
+        }
     }
 
     @discardableResult

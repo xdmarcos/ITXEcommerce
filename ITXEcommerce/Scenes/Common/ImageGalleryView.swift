@@ -39,7 +39,32 @@ struct ImageGalleryView: View {
                 .clipped()
             }
         }
-        .tabViewStyle(.page(indexDisplayMode: .automatic))
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .overlay(alignment: .bottom) {
+            PageIndicator(count: images.count, current: currentImageIndex.wrappedValue)
+                .padding(.bottom, 16)
+        }
+    }
+}
+
+// MARK: - Page indicator
+
+private struct PageIndicator: View {
+    let count: Int
+    let current: Int
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<count, id: \.self) { index in
+                Capsule()
+                    .fill(index == current ? Color.primary : Color.primary.opacity(0.3))
+                    .frame(width: index == current ? 16 : 6, height: 6)
+                    .animation(.spring(duration: 0.3), value: current)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial, in: .capsule)
     }
 }
 
@@ -49,7 +74,8 @@ struct ImageGalleryView: View {
     ImageGalleryView(
         images: [
             "https://picsum.photos/seed/acc005ntr1/400/600",
-            "https://picsum.photos/seed/acc005ntr2/400/600"
+            "https://picsum.photos/seed/acc005ntr2/400/600",
+            "https://picsum.photos/seed/acc005ntr3/400/600"
         ], currentImageIndex: .constant(0)
     )
 }

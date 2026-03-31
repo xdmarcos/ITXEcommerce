@@ -10,5 +10,4 @@ import SwiftUI
 
 protocol Displayable: Hashable {
     var displayName: String { get }
-    var color: Color { get }
 }

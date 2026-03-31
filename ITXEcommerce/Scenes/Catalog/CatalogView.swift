@@ -32,9 +32,24 @@ struct CatalogView: View {
                             viewModel.columnsSelectorButtonOnTap()
                         }
 
-                        CategorySelectorButton(
+                        MenuSelectorButton(
                             selectedCategory: $viewModel.selectedCategory,
-                            allCases: viewModel.allCategories
+                            allCases: viewModel.allCategories,
+                            title: "Category",
+                            resetTitle: "All",
+                            checkedSystemName: "line.3.horizontal.decrease.circle.fill",
+                            uncheckedSystemName: "line.3.horizontal.decrease.circle",
+                            accessibilityLabel: "Filter by category"
+                        )
+
+                        MenuSelectorButton(
+                            selectedCategory: $viewModel.selectedSort,
+                            allCases: viewModel.allSortOption,
+                            title: "Sort by",
+                            resetTitle: "Default",
+                            checkedSystemName: "arrow.up.arrow.down.square.fill",
+                            uncheckedSystemName: "arrow.up.arrow.down.square",
+                            accessibilityLabel: "Sort products by"
                         )
                     }
                     if #available(iOS 26.0, *) {
