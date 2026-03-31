@@ -45,7 +45,6 @@ struct ProductDetailView: View {
         }
         .sheet(isPresented: $viewModel.showCartDetail) {
             CartView()
-                .environment(cartViewModel)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }

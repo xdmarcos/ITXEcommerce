@@ -2,7 +2,7 @@
 //  CatalogView.swift
 //  ITXEcommerce
 //
-//  Created by xdmGzDev on 30/3/26.
+//  Created by xdmGzDev on 27/3/26.
 //
 
 import SwiftUI
@@ -17,83 +17,53 @@ struct CatalogView: View {
 
     var body: some View {
         NavigationSplitView {
-            makeCatalogContent()
-        } detail: {
-            ContentUnavailableView(
-                "Select a Product",
-                systemImage: "square.grid.3x3",
-                description: Text("Browse the catalog and tap a product to see its details.")
-            )
-        }
-    }
-}
+            CatalogGridView(viewModel: viewModel)
+                .navigationTitle("Catalog [\(viewModel.filteredProducts.count)]")
+                .navigationDestination(for: Product.self) { product in
+                    ProductDetailView(product: product)
+                        .id(product.productId)
+                }
+                .toolbar {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        ColumnsSelectorButton(columnCount: viewModel.viewColumns) {
+                            viewModel.columnsSelectorButtonOnTap()
+                        }
 
-private extension CatalogView {
-    var gridColumns: [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: 12), count: viewModel.columnCount)
-    }
-
-    func makeCatalogContent() -> some View {
-        ScrollView {
-            LazyVGrid(columns: gridColumns, spacing: 12) {
-                ForEach(viewModel.filteredProducts) { product in
-                    NavigationLink(value: product) {
-                        ProductCardView(
-                            name: product.name,
-                            brand: product.brand,
-                            price: product.price,
-                            currency: product.currency,
-                            imageURL: product.variants.first?.imageURLs.first.flatMap { URL(string: $0) }
+                        CategorySelectorButton(
+                            selectedCategory: $viewModel.selectedCategory,
+                            allCases: viewModel.allCategories
                         )
                     }
-                    .buttonStyle(.plain)
+                    if #available(iOS 26.0, *) {
+                        ToolbarSpacer(placement: .topBarTrailing)
+                    }
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        CartToolbarButton(itemCount: cartViewModel.itemCount) {
+                            viewModel.cartButtonOnTap()
+                        }
+                    }
                 }
-            }
-            .padding(12)
-        }
-        .scrollIndicators(.hidden)
-        .navigationTitle("Catalog [\(viewModel.filteredProducts.count)]")
-        .navigationDestination(for: Product.self) { product in
-            ProductDetailView(product: product)
-        }
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                ColumnsSelectorButton(columnCount: viewModel.viewColumns) {
-                    viewModel.columnsSelectorButtonOnTap()
+                .sheet(isPresented: $viewModel.showCartDetail) {
+                    CartView()
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
                 }
-
-                CategorySelectorButton(
-                    selectedCategory: $viewModel.selectedCategory,
-                    allCases: viewModel.allCategories
+                .alert(
+                    "Failed to load products",
+                    isPresented: $viewModel.showErrorAlert,
+                    actions: {
+                        Button("Retry") { viewModel.reload() }
+                        Button("OK", role: .cancel) { viewModel.clearLoadError() }
+                    }, message: {
+                        Text(viewModel.loadError?.localizedDescription ?? "")
+                    }
                 )
-            }
-            if #available(iOS 26.0, *) {
-                ToolbarSpacer(placement: .topBarTrailing)
-            }
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                CartToolbarButton(itemCount: cartViewModel.itemCount) {
-                    viewModel.cartButtonOnTap()
-                }
-            }
-        }
-        .sheet(isPresented: $viewModel.showCartDetail) {
-            CartView()
-                .environment(cartViewModel)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-        }
-        .alert(
-            "Failed to load products",
-            isPresented: Binding(
-                get: { viewModel.loadError != nil },
-                set: { if !$0 { viewModel.clearLoadError() } }
-            ),
-            presenting: viewModel.loadError
-        ) { _ in
-            Button("Retry") { viewModel.reload() }
-            Button("OK", role: .cancel) { viewModel.clearLoadError() }
-        } message: { error in
-            Text(error.localizedDescription)
+        } detail: {
+            WelcomeView(
+                title: "Select a Product",
+                description: "Browse the catalog and tap a product to see its details.",
+                systemImage: "square.grid.3x3"
+            )
         }
     }
 }

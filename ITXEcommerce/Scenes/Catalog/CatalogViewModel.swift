@@ -16,7 +16,9 @@ final class CatalogViewModel {
     let allCategories = ProductCategory.allCases
     var columnCount: Int = 2
     var selectedCategory: ProductCategory?
+    var selectedProduct: Product?
     var showCartDetail = false
+    var showErrorAlert = false
 
     init(repository: any ProductRepositoryProtocol) {
         self.repository = repository
@@ -34,6 +36,7 @@ final class CatalogViewModel {
 
     func clearLoadError() {
         loadError = nil
+        showErrorAlert = false
     }
 
     func cartButtonOnTap() {
@@ -51,9 +54,10 @@ final class CatalogViewModel {
     private func fetchProducts() async {
         do {
             products = try await repository.fetchAll()
-            loadError = nil
+            clearLoadError()
         } catch {
             loadError = error
+            showErrorAlert = true
         }
     }
 
@@ -61,9 +65,10 @@ final class CatalogViewModel {
         Task {
             do {
                 products = try await repository.fetch(category: category)
-                loadError = nil
+                clearLoadError()
             } catch {
                 loadError = error
+                showErrorAlert = true
             }
         }
     }
