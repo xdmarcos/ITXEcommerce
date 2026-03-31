@@ -9,16 +9,12 @@ import SwiftUI
 
 struct CartView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var viewModel: CartViewModel
-
-    init(items: [CartItem] = []) {
-        self.viewModel = CartViewModel(items: items)
-    }
+    @Environment(CartViewModel.self) private var cartViewModel
 
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.items.isEmpty {
+                if cartViewModel.items.isEmpty {
                     makeEmptyState()
                 } else {
                     makeCartList()
@@ -46,19 +42,14 @@ private extension CartView {
 
     func makeCartList() -> some View {
         List {
-            ForEach(viewModel.items) { item in
+            ForEach(cartViewModel.items) { item in
                 CartItemRow(
                     item: item,
-                    decreaseQuantity: {
-                        viewModel.decreaseQuantity($0)
-                    }, increaseQuantity: {
-                        viewModel.increaseQuantity($0)
-                    }
+                    decreaseQuantity: { cartViewModel.decreaseQuantity($0) },
+                    increaseQuantity: { cartViewModel.increaseQuantity($0) }
                 )
             }
-            .onDelete { indexSet in
-                viewModel.onDelete(indexSet)
-            }
+            .onDelete { cartViewModel.onDelete($0) }
 
             makeTotalSection()
                 .listRowInsets(.init())
@@ -75,13 +66,13 @@ private extension CartView {
                 Text("Total")
                     .font(.headline)
                 Spacer()
-                Text(viewModel.totalPrice, format: .currency(code: viewModel.currency))
+                Text(cartViewModel.totalPrice, format: .currency(code: cartViewModel.currency))
                     .font(.headline)
             }
             .padding(.horizontal)
 
             Button {
-                viewModel.checkout()
+                cartViewModel.checkout()
             } label: {
                 Text("Checkout")
                     .font(.headline)
@@ -98,12 +89,6 @@ private extension CartView {
 // MARK: - Preview
 
 #Preview {
-    CartView(
-        items: [CartItem(
-            product: Product.mockProducts.first!, // swiftlint:disable:this force_unwrapping
-            selectedSize: .m,
-            selectedVariantId: "TRS-001-BEI",
-            quantity: 2
-        )]
-    )
+    CartView()
+        .environment(CartViewModel(repository: MockCartRepository()))
 }

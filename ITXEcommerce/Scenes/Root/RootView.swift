@@ -8,11 +8,8 @@
 import SwiftUI
 
 struct RootView: View {
-    @State private var viewModel: RootViewModel
-
-    init() {
-        self.viewModel = RootViewModel()
-    }
+    @Environment(\.modelContext) private var modelContext
+    @State private var viewModel = RootViewModel()
 
     var body: some View {
         makeTabs()
@@ -28,7 +25,7 @@ private extension RootView {
             }
         } else {
             TabView {
-                CatalogView()
+                CatalogView(repository: ProductRepository(modelContext: modelContext))
                     .tabItem {
                         Label(AppTab.catalog.title, systemImage: AppTab.catalog.systemImage)
                     }
@@ -59,7 +56,7 @@ private extension RootView {
             systemImage: AppTab.catalog.systemImage,
             value: .catalog
         ) {
-            CatalogView()
+            CatalogView(repository: ProductRepository(modelContext: modelContext))
         }
     }
 

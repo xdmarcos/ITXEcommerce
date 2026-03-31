@@ -12,11 +12,10 @@ final class ProductDetailViewModel {
     let product: Product
 
     var showCartDetail = false
-    var cartItemCount = 0
-
     var selectedVariant: ProductVariant?
     var selectedSize: ProductSize?
     var currentImageIndex: Int = 0
+
     var activeVariant: ProductVariant? {
         selectedVariant ?? product.variants.first
     }
@@ -32,12 +31,6 @@ final class ProductDetailViewModel {
 
     func selectSize(_ size: ProductSize) {
         selectedSize = size
-    }
-
-    func addToCart() {
-        guard let size = selectedSize, let variant = activeVariant else { return }
-        cartItemCount += 1
-        debugPrint(size, variant)
     }
 
     func isSizeAvailable(_ size: ProductSize) -> Bool {

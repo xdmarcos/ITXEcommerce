@@ -9,12 +9,18 @@ import Foundation
 
 @Observable
 final class CatalogViewModel {
-    var products: [Product] = Product.mockProducts
+    private let repository: any ProductRepositoryProtocol
+    private(set) var products: [Product] = []
+
+    let allCategories = ProductCategory.allCases
     var columnCount: Int = 2
     var selectedCategory: ProductCategory?
-    var cartItemCount = 0
     var showCartDetail = false
-    var allCategories = ProductCategory.allCases
+
+    init(repository: any ProductRepositoryProtocol) {
+        self.repository = repository
+        reload()
+    }
 
     var viewColumns: ColumnsSelectorButton.ColumnsCount {
         .init(rawValue: columnCount) ?? .two
@@ -31,5 +37,13 @@ final class CatalogViewModel {
 
     func columnsSelectorButtonOnTap() {
         columnCount = columnCount == 2 ? 3 : 2
+    }
+
+    func reload() {
+        products = (try? repository.fetchAll()) ?? []
+    }
+
+    private func reload(for category: ProductCategory?) {
+        products = (try? repository.fetch(category: category)) ?? []
     }
 }

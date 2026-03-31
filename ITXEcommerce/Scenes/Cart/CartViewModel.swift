@@ -9,10 +9,12 @@ import Foundation
 
 @Observable
 final class CartViewModel {
+    private let repository: any CartRepositoryProtocol
     private(set) var items: [CartItem] = []
 
-    init(items: [CartItem] = []) {
-        self.items = items
+    init(repository: any CartRepositoryProtocol) {
+        self.repository = repository
+        reload()
     }
 
     var itemCount: Int {
@@ -30,48 +32,38 @@ final class CartViewModel {
     }
 
     func add(product: Product, size: ProductSize, variantId: String) {
-        if let index = items.firstIndex(where: {
-            $0.product?.productId == product.productId &&
-            $0.selectedSize == size &&
-            $0.selectedVariantId == variantId
-        }) {
-            let item = items.remove(at: index)
-            item.quantity += 1
-            items.insert(item, at: index)
-        } else {
-            items.append(CartItem(product: product, selectedSize: size, selectedVariantId: variantId))
-        }
+        try? repository.add(product: product, size: size, variantId: variantId)
+        reload()
     }
 
     func increaseQuantity(_ item: CartItem) {
-        guard let index = items.firstIndex(where: { $0 === item }) else { return }
-
-        let existing = items.remove(at: index)
-        existing.quantity += 1
-        items.insert(existing, at: index)
+        try? repository.updateQuantity(item, to: item.quantity + 1)
+        reload()
     }
 
     func decreaseQuantity(_ item: CartItem) {
-        guard let index = items.firstIndex(where: { $0 === item }) else { return }
-
-        if items[index].quantity > 1 {
-            let existing = items.remove(at: index)
-            existing.quantity -= 1
-            items.insert(existing, at: index)
+        if item.quantity > 1 {
+            try? repository.updateQuantity(item, to: item.quantity - 1)
         } else {
-            items.remove(at: index)
+            try? repository.remove(item)
         }
+        reload()
+    }
+
+    func remove(_ item: CartItem) {
+        try? repository.remove(item)
+        reload()
     }
 
     func onDelete(_ indexSet: IndexSet) {
-        indexSet.map { items[$0] }.forEach { removeItem($0) }
+        indexSet.map { items[$0] }.forEach { remove($0) }
     }
 
     func checkout() {
-        // TODO
+        // TODO: implement checkout flow
     }
 
-    private func removeItem(_ item: CartItem) {
-        items.removeAll { $0 === item }
+    private func reload() {
+        items = (try? repository.fetchItems()) ?? []
     }
 }

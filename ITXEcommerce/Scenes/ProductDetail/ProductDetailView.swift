@@ -9,9 +9,10 @@ import SwiftUI
 
 struct ProductDetailView: View {
     @State private var viewModel: ProductDetailViewModel
+    @Environment(CartViewModel.self) private var cartViewModel
 
     init(product: Product) {
-        viewModel = ProductDetailViewModel(product: product)
+        _viewModel = State(wrappedValue: ProductDetailViewModel(product: product))
     }
 
     var body: some View {
@@ -37,13 +38,14 @@ struct ProductDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                CartToolbarButton(itemCount: viewModel.cartItemCount) {
+                CartToolbarButton(itemCount: cartViewModel.itemCount) {
                     viewModel.cartButtonOnTap()
                 }
             }
         }
         .sheet(isPresented: $viewModel.showCartDetail) {
             CartView()
+                .environment(cartViewModel)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
@@ -177,7 +179,8 @@ private extension ProductDetailView {
 
     func makeAddToCartButton() -> some View {
         Button {
-            viewModel.addToCart()
+            guard let size = viewModel.selectedSize, let variant = viewModel.activeVariant else { return }
+            cartViewModel.add(product: viewModel.product, size: size, variantId: variant.id)
         } label: {
             Label("Add to Cart", systemImage: "cart.badge.plus")
                 .font(.headline)
@@ -195,4 +198,5 @@ private extension ProductDetailView {
     NavigationStack {
         ProductDetailView(product: Product.mockProducts[0])
     }
+    .environment(CartViewModel(repository: MockCartRepository()))
 }

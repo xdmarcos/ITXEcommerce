@@ -8,7 +8,12 @@
 import SwiftUI
 
 struct CatalogView: View {
-    @State private var viewModel = CatalogViewModel()
+    @Environment(CartViewModel.self) private var cartViewModel
+    @State private var viewModel: CatalogViewModel
+
+    init(repository: any ProductRepositoryProtocol) {
+        _viewModel = State(wrappedValue: CatalogViewModel(repository: repository))
+    }
 
     var body: some View {
         NavigationSplitView {
@@ -52,27 +57,28 @@ private extension CatalogView {
             ProductDetailView(product: product)
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
                 ColumnsSelectorButton(columnCount: viewModel.viewColumns) {
                     viewModel.columnsSelectorButtonOnTap()
                 }
-            }
 
-            ToolbarItem(placement: .topBarTrailing) {
                 CategorySelectorButton(
                     selectedCategory: $viewModel.selectedCategory,
                     allCases: viewModel.allCategories
                 )
             }
-
-            ToolbarItem(placement: .topBarTrailing) {
-                CartToolbarButton(itemCount: viewModel.cartItemCount) {
+            if #available(iOS 26.0, *) {
+                ToolbarSpacer(placement: .topBarTrailing)
+            }
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                CartToolbarButton(itemCount: cartViewModel.itemCount) {
                     viewModel.cartButtonOnTap()
                 }
             }
         }
         .sheet(isPresented: $viewModel.showCartDetail) {
             CartView()
+                .environment(cartViewModel)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
@@ -82,5 +88,6 @@ private extension CatalogView {
 // MARK: - Previews
 
 #Preview("Catalog") {
-    CatalogView()
+    CatalogView(repository: MockProductRepository(products: Product.mockProducts))
+        .environment(CartViewModel(repository: MockCartRepository()))
 }

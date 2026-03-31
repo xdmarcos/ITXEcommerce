@@ -10,10 +10,24 @@ import SwiftUI
 
 @main
 struct ITXEcommerceApp: App {
+    private let container: ModelContainer
+    private let cartViewModel: CartViewModel
+
+    init() {
+        do {
+            let container = try ModelContainer(for: Product.self, CartItem.self)
+            self.container = container
+            self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
+        } catch {
+            fatalError("ModelContainer init failed: \(error)")
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(cartViewModel)
         }
-        .modelContainer(for: [Product.self, Cart.self, CartItem.self])
+        .modelContainer(container)
     }
 }

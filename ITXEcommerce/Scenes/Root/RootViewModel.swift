@@ -9,6 +9,5 @@ import Foundation
 
 @Observable
 final class RootViewModel {
-
     var selection: AppTab = .catalog
 }

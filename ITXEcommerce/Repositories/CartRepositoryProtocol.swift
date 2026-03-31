@@ -1,0 +1,16 @@
+//
+//  CartRepositoryProtocol.swift
+//  ITXEcommerce
+//
+//  Created by xdmGzDev on 30/3/26.
+//
+
+import Foundation
+
+protocol CartRepositoryProtocol {
+    func fetchItems() throws -> [CartItem]
+    func add(product: Product, size: ProductSize, variantId: String) throws
+    func updateQuantity(_ item: CartItem, to quantity: Int) throws
+    func remove(_ item: CartItem) throws
+    func clear() throws
+}
