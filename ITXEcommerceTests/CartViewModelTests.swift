@@ -23,7 +23,7 @@ struct CartViewModelTests {
         #expect(vm.totalPrice == .zero)
     }
 
-    @Test func defaultCurrencyIsEURWhenCartIsEmpty() {
+    @Test func currencyIsAlwaysEUR() {
         let vm = CartViewModel(repository: MockCartRepository())
         #expect(vm.currency == "EUR")
     }
@@ -38,41 +38,40 @@ struct CartViewModelTests {
     @Test func addProductIncreasesItemCount() async {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        await vm.add(product: makeProduct(id: "P1"), size: .m, variantId: "V1").value
+        await vm.add(product: makeProduct(id: "P1")).value
 
         #expect(vm.itemCount == 1)
         #expect(vm.items.count == 1)
     }
 
-    @Test func addingSameProductAndSizeIncrementsQuantityOnExistingItem() async {
+    @Test func addingSameProductIncrementsQuantityOnExistingItem() async {
         let vm = CartViewModel(repository: MockCartRepository())
 
         let product = makeProduct(id: "P1")
-        await vm.add(product: product, size: .m, variantId: "V1").value
-        await vm.add(product: product, size: .m, variantId: "V1").value
+        await vm.add(product: product).value
+        await vm.add(product: product).value
 
         #expect(vm.items.count == 1)
         #expect(vm.itemCount == 2)
     }
 
-    @Test func addingSameProductWithDifferentSizesCreatesSeperateCartItems() async {
+    @Test func addingDifferentProductsCreatesSeperateCartItems() async {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        let product = makeProduct(id: "P1")
-        await vm.add(product: product, size: .s, variantId: "V1").value
-        await vm.add(product: product, size: .l, variantId: "V1").value
+        await vm.add(product: makeProduct(id: "P1")).value
+        await vm.add(product: makeProduct(id: "P2")).value
 
         #expect(vm.items.count == 2)
         #expect(vm.itemCount == 2)
     }
 
-    // MARK: Total price & currency
+    // MARK: Total price
 
     @Test func totalPriceSumsAllItems() async {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        await vm.add(product: makeProduct(id: "P1", price: 10.00), size: .m, variantId: "V1").value
-        await vm.add(product: makeProduct(id: "P2", price: 25.00), size: .s, variantId: "V1").value
+        await vm.add(product: makeProduct(id: "P1", price: 10.00)).value
+        await vm.add(product: makeProduct(id: "P2", price: 25.00)).value
 
         #expect(vm.totalPrice == 35.00)
     }
@@ -81,18 +80,10 @@ struct CartViewModelTests {
         let vm = CartViewModel(repository: MockCartRepository())
 
         let product = makeProduct(id: "P1", price: 15.00)
-        await vm.add(product: product, size: .m, variantId: "V1").value
-        await vm.add(product: product, size: .m, variantId: "V1").value
+        await vm.add(product: product).value
+        await vm.add(product: product).value
 
         #expect(vm.totalPrice == 30.00)
-    }
-
-    @Test func currencyComesFromFirstCartItem() async {
-        let vm = CartViewModel(repository: MockCartRepository())
-
-        await vm.add(product: makeProduct(id: "P1", currency: "USD"), size: .m, variantId: "V1").value
-
-        #expect(vm.currency == "USD")
     }
 
     // MARK: Quantity changes
@@ -100,7 +91,7 @@ struct CartViewModelTests {
     @Test func increaseQuantityAddsOne() async throws {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        await vm.add(product: makeProduct(id: "P1"), size: .m, variantId: "V1").value
+        await vm.add(product: makeProduct(id: "P1")).value
 
         let item = try #require(vm.items.first)
         await vm.increaseQuantity(item).value
@@ -112,8 +103,8 @@ struct CartViewModelTests {
         let vm = CartViewModel(repository: MockCartRepository())
 
         let product = makeProduct(id: "P1")
-        await vm.add(product: product, size: .m, variantId: "V1").value
-        await vm.add(product: product, size: .m, variantId: "V1").value
+        await vm.add(product: product).value
+        await vm.add(product: product).value
 
         let item = try #require(vm.items.first)
         await vm.decreaseQuantity(item).value
@@ -125,7 +116,7 @@ struct CartViewModelTests {
     @Test func decreaseQuantityFromOneRemovesItem() async throws {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        await vm.add(product: makeProduct(id: "P1"), size: .m, variantId: "V1").value
+        await vm.add(product: makeProduct(id: "P1")).value
 
         let item = try #require(vm.items.first)
         await vm.decreaseQuantity(item).value
@@ -139,8 +130,8 @@ struct CartViewModelTests {
     @Test func removeItemDeletesItFromCart() async throws {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        await vm.add(product: makeProduct(id: "P1"), size: .m, variantId: "V1").value
-        await vm.add(product: makeProduct(id: "P2"), size: .s, variantId: "V1").value
+        await vm.add(product: makeProduct(id: "P1")).value
+        await vm.add(product: makeProduct(id: "P2")).value
 
         let item = try #require(vm.items.first)
         await vm.remove(item).value
@@ -151,8 +142,8 @@ struct CartViewModelTests {
     @Test func onDeleteRemovesItemsAtGivenIndexSet() async {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        await vm.add(product: makeProduct(id: "P1"), size: .m, variantId: "V1").value
-        await vm.add(product: makeProduct(id: "P2"), size: .s, variantId: "V1").value
+        await vm.add(product: makeProduct(id: "P1")).value
+        await vm.add(product: makeProduct(id: "P2")).value
 
         await vm.onDelete(IndexSet([0])).value
 
@@ -181,27 +172,22 @@ struct CartViewModelTests {
 
 fileprivate func makeProduct(
     id: String = UUID().uuidString,
-    price: Decimal = 10.00,
-    currency: String = "EUR"
+    price: Decimal = 10.00
 ) -> Product {
     Product(
         productId: id,
-        name: "Test Product",
+        title: "Test Product",
         brand: "Test Brand",
         productDescription: "Test Description",
-        category: .shirt,
-        price: price,
-        currency: currency,
-        variants: [
-            ProductVariant(id: "V1", colorName: "Black", colorHex: "#000000", imageURLs: [], availableSizes: [.s, .m, .l])
-        ]
+        category: .beauty,
+        price: price
     )
 }
 
 fileprivate final class FailingCartRepository: CartRepositoryProtocol {
     struct CartError: Error {}
     func fetchItems() async throws -> [CartItem] { throw CartError() }
-    func add(product: Product, size: ProductSize, variantId: String) async throws { throw CartError() }
+    func add(product: Product) async throws { throw CartError() }
     func updateQuantity(_ item: CartItem, to quantity: Int) async throws { throw CartError() }
     func remove(_ item: CartItem) async throws { throw CartError() }
     func clear() async throws { throw CartError() }

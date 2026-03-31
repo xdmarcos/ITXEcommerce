@@ -13,14 +13,9 @@ struct ProductDetailViewModelTests {
 
     // MARK: Initial state
 
-    @Test func initialSelectedVariantIsNil() {
-        let vm = ProductDetailViewModel(product: makeProduct())
-        #expect(vm.selectedVariant == nil)
-    }
-
     @Test func initialSelectedSizeIsNil() {
         let vm = ProductDetailViewModel(product: makeProduct())
-        #expect(vm.selectedSize == nil)
+        #expect(vm.showCartDetail == false)
     }
 
     @Test func initialShowCartDetailIsFalse() {
@@ -39,111 +34,46 @@ struct ProductDetailViewModelTests {
         #expect(vm.product.productId == "unique-id")
     }
 
-    // MARK: Active variant
-
-    @Test func activeVariantDefaultsToFirstVariantWhenNoneSelected() {
-        let variant1 = makeVariant(id: "V1")
-        let variant2 = makeVariant(id: "V2")
-        let product = makeProduct(variants: [variant1, variant2])
+    @Test func productTitleIsAccessible() {
+        let product = makeProduct(id: "P1")
         let vm = ProductDetailViewModel(product: product)
-
-        #expect(vm.activeVariant == variant1)
+        #expect(vm.product.title == "Test Product")
     }
 
-    @Test func activeVariantIsNilWhenProductHasNoVariants() {
-        let product = makeProduct(variants: [])
+    @Test func productImagesAreAccessible() {
+        let product = makeProduct(id: "P1")
         let vm = ProductDetailViewModel(product: product)
-        #expect(vm.activeVariant == nil)
+        #expect(vm.product.images.count == 2)
     }
 
-    @Test func activeVariantReturnsSelectedVariant() {
-        let variant1 = makeVariant(id: "V1")
-        let variant2 = makeVariant(id: "V2")
-        let product = makeProduct(variants: [variant1, variant2])
+    @Test func productThumbnailIsAccessible() {
+        let product = makeProduct(id: "P1")
         let vm = ProductDetailViewModel(product: product)
-
-        vm.selectVariant(variant2)
-
-        #expect(vm.activeVariant == variant2)
+        #expect(!vm.product.thumbnail.isEmpty)
     }
 
-    // MARK: Variant selection
-
-    @Test func selectVariantUpdatesSelectedVariant() {
-        let variant = makeVariant(id: "V1")
-        let product = makeProduct(variants: [variant])
+    @Test func productRatingIsAccessible() {
+        let product = makeProduct(id: "P1")
         let vm = ProductDetailViewModel(product: product)
-
-        vm.selectVariant(variant)
-
-        #expect(vm.selectedVariant == variant)
+        #expect(vm.product.rating == 4.5)
     }
 
-    @Test func selectVariantClearsPreviouslySelectedSize() {
-        let variant1 = makeVariant(id: "V1", sizes: [.m, .l])
-        let variant2 = makeVariant(id: "V2", sizes: [.s])
-        let product = makeProduct(variants: [variant1, variant2])
+    @Test func productStockIsAccessible() {
+        let product = makeProduct(id: "P1")
         let vm = ProductDetailViewModel(product: product)
-
-        vm.selectSize(.m)
-        vm.selectVariant(variant2)
-
-        #expect(vm.selectedSize == nil)
+        #expect(vm.product.stock == 10)
     }
 
-    // MARK: Size selection
-
-    @Test func selectSizeUpdatesSelectedSize() {
-        let vm = ProductDetailViewModel(product: makeProduct())
-
-        vm.selectSize(.l)
-
-        #expect(vm.selectedSize == .l)
-    }
-
-    @Test func selectSizeCanBeChangedToAnotherSize() {
-        let vm = ProductDetailViewModel(product: makeProduct())
-
-        vm.selectSize(.s)
-        vm.selectSize(.m)
-
-        #expect(vm.selectedSize == .m)
-    }
-
-    // MARK: Size availability
-
-    @Test func isSizeAvailableReturnsTrueForSizeInActiveVariant() {
-        let variant = makeVariant(id: "V1", sizes: [.s, .m, .l])
-        let vm = ProductDetailViewModel(product: makeProduct(variants: [variant]))
-
-        #expect(vm.isSizeAvailable(.s) == true)
-        #expect(vm.isSizeAvailable(.m) == true)
-        #expect(vm.isSizeAvailable(.l) == true)
-    }
-
-    @Test func isSizeAvailableReturnsFalseForSizeNotInActiveVariant() {
-        let variant = makeVariant(id: "V1", sizes: [.s, .m])
-        let vm = ProductDetailViewModel(product: makeProduct(variants: [variant]))
-
-        #expect(vm.isSizeAvailable(.xl) == false)
-        #expect(vm.isSizeAvailable(.xxl) == false)
-    }
-
-    @Test func isSizeAvailableReturnsFalseWhenProductHasNoVariants() {
-        let vm = ProductDetailViewModel(product: makeProduct(variants: []))
-        #expect(vm.isSizeAvailable(.m) == false)
-    }
-
-    @Test func isSizeAvailableChecksSelectedVariantNotDefaultVariant() {
-        let variant1 = makeVariant(id: "V1", sizes: [.s, .m])
-        let variant2 = makeVariant(id: "V2", sizes: [.xl, .xxl])
-        let product = makeProduct(variants: [variant1, variant2])
+    @Test func productDiscountPercentageIsAccessible() {
+        let product = makeProduct(id: "P1")
         let vm = ProductDetailViewModel(product: product)
+        #expect(vm.product.discountPercentage == 5.0)
+    }
 
-        vm.selectVariant(variant2)
-
-        #expect(vm.isSizeAvailable(.xl) == true)
-        #expect(vm.isSizeAvailable(.m) == false)
+    @Test func productTagsAreAccessible() {
+        let product = makeProduct(id: "P1")
+        let vm = ProductDetailViewModel(product: product)
+        #expect(vm.product.tags == ["test", "mock"])
     }
 
     // MARK: Cart button
@@ -159,29 +89,22 @@ struct ProductDetailViewModelTests {
 
 // MARK: - Helpers
 
-fileprivate func makeVariant(
-    id: String = "V1",
-    colorName: String = "Black",
-    colorHex: String = "#000000",
-    sizes: [ProductSize] = [.s, .m, .l]
-) -> ProductVariant {
-    ProductVariant(id: id, colorName: colorName, colorHex: colorHex, imageURLs: [], availableSizes: sizes)
-}
-
-fileprivate func makeProduct(
-    id: String = "P1",
-    variants: [ProductVariant] = [
-        makeVariant(id: "V1", sizes: [.s, .m, .l]),
-        makeVariant(id: "V2", colorName: "White", colorHex: "#FFFFFF", sizes: [.m, .xl])
-    ]
-) -> Product {
+fileprivate func makeProduct(id: String = "P1") -> Product {
     Product(
         productId: id,
-        name: "Test Product",
+        title: "Test Product",
         brand: "Test Brand",
         productDescription: "Test Description",
-        category: .shirt,
+        category: .beauty,
         price: 29.99,
-        variants: variants
+        discountPercentage: 5.0,
+        rating: 4.5,
+        stock: 10,
+        tags: ["test", "mock"],
+        thumbnail: "https://example.com/thumbnail.webp",
+        images: [
+            "https://example.com/image1.webp",
+            "https://example.com/image2.webp"
+        ]
     )
 }

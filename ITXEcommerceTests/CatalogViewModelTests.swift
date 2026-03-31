@@ -75,9 +75,9 @@ struct CatalogViewModelTests {
 
     @Test func filteredProductsReturnsAllWhenNoCategorySelected() async {
         let products = [
-            makeProduct(id: "1", category: .shirt),
-            makeProduct(id: "2", category: .denim),
-            makeProduct(id: "3", category: .trousers)
+            makeProduct(id: "1", category: .beauty),
+            makeProduct(id: "2", category: .laptops),
+            makeProduct(id: "3", category: .tops)
         ]
         let vm = CatalogViewModel(repository: MockProductRepository(products: products))
         await vm.loadTask?.value
@@ -89,25 +89,25 @@ struct CatalogViewModelTests {
 
     @Test func filteredProductsFiltersBySelectedCategory() async {
         let products = [
-            makeProduct(id: "1", category: .shirt),
-            makeProduct(id: "2", category: .shirt),
-            makeProduct(id: "3", category: .denim),
-            makeProduct(id: "4", category: .trousers)
+            makeProduct(id: "1", category: .beauty),
+            makeProduct(id: "2", category: .beauty),
+            makeProduct(id: "3", category: .laptops),
+            makeProduct(id: "4", category: .tops)
         ]
         let vm = CatalogViewModel(repository: MockProductRepository(products: products))
         await vm.loadTask?.value
 
-        vm.selectedCategory = .shirt
+        vm.selectedCategory = .beauty
 
         #expect(vm.filteredProducts.count == 2)
     }
 
     @Test func filteredProductsIsEmptyWhenNothingMatchesCategory() async {
-        let products = [makeProduct(id: "1", category: .shirt)]
+        let products = [makeProduct(id: "1", category: .beauty)]
         let vm = CatalogViewModel(repository: MockProductRepository(products: products))
         await vm.loadTask?.value
 
-        vm.selectedCategory = .jacket
+        vm.selectedCategory = .laptops
 
         #expect(vm.filteredProducts.isEmpty)
     }
@@ -147,12 +147,12 @@ struct CatalogViewModelTests {
 
 fileprivate func makeProduct(
     id: String = UUID().uuidString,
-    category: ProductCategory = .shirt,
+    category: ProductCategory = .beauty,
     price: Decimal = 29.99
 ) -> Product {
     Product(
         productId: id,
-        name: "Test Product",
+        title: "Test Product",
         brand: "Test Brand",
         productDescription: "Test Description",
         category: category,
