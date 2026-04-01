@@ -23,6 +23,11 @@ final class CatalogViewModel {
     var showCartDetail = false
     var showErrorAlert = false
     var firstLoadCompleted = false
+    private(set) var isLoadingMore = false
+    private(set) var hasMore = true
+
+    private static let pageSize = 20
+    private var currentSkip = 0
 
     init(repository: any ProductRepositoryProtocol) {
         self.repository = repository
@@ -73,9 +78,27 @@ final class CatalogViewModel {
         return task
     }
 
+    func loadNextPage() {
+        guard !isLoadingMore, hasMore else { return }
+        Task { await fetchNextPage() }
+    }
+
     private func fetchProducts() async {
+        currentSkip = 0
+        products = []
+        hasMore = true
+        await fetchNextPage()
+    }
+
+    private func fetchNextPage() async {
+        guard !isLoadingMore, hasMore else { return }
+        isLoadingMore = true
+        defer { isLoadingMore = false }
         do {
-            products = try await repository.fetchAll()
+            let (newProducts, total) = try await repository.fetchPage(skip: currentSkip, limit: Self.pageSize)
+            products += newProducts
+            currentSkip += newProducts.count
+            hasMore = currentSkip < total
             clearLoadError()
         } catch {
             loadError = error

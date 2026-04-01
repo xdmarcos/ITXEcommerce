@@ -30,6 +30,11 @@ struct CatalogGridView: View {
                     }
                     .buttonStyle(.plain)
                 }
+                if viewModel.hasMore && viewModel.firstLoadCompleted {
+                    Color.clear
+                        .frame(height: 1)
+                        .onAppear { viewModel.loadNextPage() }
+                }
             }
             .padding(12)
         }

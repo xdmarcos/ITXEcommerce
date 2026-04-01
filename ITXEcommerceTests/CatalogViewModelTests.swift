@@ -255,6 +255,58 @@ struct CatalogViewModelTests {
         vm.cartButtonOnTap()
         #expect(vm.showCartDetail == true)
     }
+
+    // MARK: Pagination
+
+    @Test func loadsFirstPageOf20Products() async {
+        let products = (1...30).map { makeProduct(id: "\($0)") }
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+
+        await vm.onFirstAppear().value
+
+        #expect(vm.products.count == 20)
+    }
+
+    @Test func hasMoreIsTrueWhenMorePagesExist() async {
+        let products = (1...30).map { makeProduct(id: "\($0)") }
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+
+        await vm.onFirstAppear().value
+
+        #expect(vm.hasMore == true)
+    }
+
+    @Test func hasMoreIsFalseWhenAllProductsFitInOnePage() async {
+        let products = (1...10).map { makeProduct(id: "\($0)") }
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+
+        await vm.onFirstAppear().value
+
+        #expect(vm.hasMore == false)
+    }
+
+    @Test func loadNextPageAppendsProducts() async {
+        let products = (1...30).map { makeProduct(id: "\($0)") }
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        await Task { vm.loadNextPage() }.value
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        #expect(vm.products.count == 30)
+        #expect(vm.hasMore == false)
+    }
+
+    @Test func reloadResetsPaginationState() async {
+        let products = (1...30).map { makeProduct(id: "\($0)") }
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+        #expect(vm.products.count == 20)
+
+        await vm.reload().value
+
+        #expect(vm.products.count == 20)
+    }
 }
 
 // MARK: - Helpers
@@ -278,4 +330,5 @@ fileprivate final class FailingProductRepository: ProductRepositoryProtocol {
     struct FetchError: Error {}
     func fetchAll() async throws -> [Product] { throw FetchError() }
     func fetch(category: ProductCategory?) async throws -> [Product] { throw FetchError() }
+    func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { throw FetchError() }
 }

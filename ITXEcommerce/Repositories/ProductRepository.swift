@@ -18,6 +18,22 @@ final class ProductRepository: ProductRepositoryProtocol {
         self.modelContext = modelContext
     }
 
+    func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) {
+        do {
+            let response = try await apiClient.asyncRequest(
+                endpoint: DummyJsonEndpointProvider.getProducts(pagination: .init(limit: limit, skip: skip)),
+                responseModel: ProductsDTO.self
+            )
+            let batch = response.asProducts()
+            let pageProducts = try upsert(batch, returnAll: false)
+            return (pageProducts, response.total)
+        } catch {
+            let mocks = Product.mockProducts
+            let page = Array(mocks.dropFirst(skip).prefix(limit))
+            return (page, mocks.count)
+        }
+    }
+
     func fetchAll() async throws -> [Product] {
         do {
             let response = try await apiClient.asyncRequest(
@@ -30,11 +46,14 @@ final class ProductRepository: ProductRepositoryProtocol {
         }
     }
 
-    private func upsert(_ products: [Product]) throws -> [Product] {
+    @discardableResult
+    private func upsert(_ products: [Product], returnAll: Bool = true) throws -> [Product] {
+        let productIds = products.map(\.productId)
         let existingMap = try modelContext
-            .fetch(FetchDescriptor<Product>())
+            .fetch(FetchDescriptor<Product>(predicate: #Predicate { productIds.contains($0.productId) }))
             .reduce(into: [String: Product]()) { $0[$1.productId] = $1 }
 
+        var batchResult: [Product] = []
         for product in products {
             if let existing = existingMap[product.productId] {
                 existing.title = product.title
@@ -48,13 +67,18 @@ final class ProductRepository: ProductRepositoryProtocol {
                 existing.tags = product.tags
                 existing.thumbnail = product.thumbnail
                 existing.images = product.images
+                batchResult.append(existing)
             } else {
                 modelContext.insert(product)
+                batchResult.append(product)
             }
         }
         try modelContext.save()
 
-        return try modelContext.fetch(FetchDescriptor<Product>())
+        if returnAll {
+            return try modelContext.fetch(FetchDescriptor<Product>())
+        }
+        return batchResult
     }
 
     func fetch(category: ProductCategory?) async throws -> [Product] {
