@@ -27,4 +27,6 @@ final class MockProductRepository: ProductRepositoryProtocol {
         let page = Array(products.dropFirst(skip).prefix(limit))
         return (page, products.count)
     }
+
+    func clearCache() throws {}
 }

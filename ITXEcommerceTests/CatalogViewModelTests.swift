@@ -382,4 +382,5 @@ fileprivate final class FailingProductRepository: ProductRepositoryProtocol {
     func fetchAll() async throws -> [Product] { throw FetchError() }
     func fetch(category: ProductCategory?) async throws -> [Product] { throw FetchError() }
     func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { throw FetchError() }
+    func clearCache() throws { throw FetchError() }
 }

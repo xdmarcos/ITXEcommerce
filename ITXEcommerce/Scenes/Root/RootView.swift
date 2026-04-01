@@ -9,10 +9,13 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(\.productRepository) private var productRepository
+    @Environment(SettingsViewModel.self) private var settingsViewModel
     @State private var viewModel = RootViewModel()
 
     var body: some View {
         makeTabs()
+            .preferredColorScheme(settingsViewModel.colorScheme.colorScheme)
+            .environment(\.locale, settingsViewModel.language.locale)
     }
 }
 

@@ -57,6 +57,11 @@ final class ProductRepository: ProductRepositoryProtocol {
         return try modelContext.fetch(descriptor)
     }
 
+    func clearCache() throws {
+        try modelContext.delete(model: Product.self)
+        try modelContext.save()
+    }
+
     private func fetchByProductIds(_ productIds: [String]) throws -> [Product] {
         try modelContext.fetch(
             FetchDescriptor<Product>(predicate: #Predicate { productIds.contains($0.productId) })
