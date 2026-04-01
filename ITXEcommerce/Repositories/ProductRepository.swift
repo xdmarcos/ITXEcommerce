@@ -73,7 +73,8 @@ extension ProductsDTO {
     func asSnapshots() -> [ProductSnapshot] {
         products.map { dto in
             ProductSnapshot(
-                productId: dto.sku,
+                productId: String(dto.id),
+                sku: dto.sku,
                 title: dto.title,
                 brand: dto.brand ?? "Generic",
                 productDescription: dto.description,

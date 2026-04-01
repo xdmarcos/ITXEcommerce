@@ -24,6 +24,12 @@ struct ProductDetailViewModelTests {
         #expect(vm.product.productId == "unique-id")
     }
 
+    @Test func productSkuIsAccessible() {
+        let product = makeProduct(id: "P1")
+        let vm = ProductDetailViewModel(product: product)
+        #expect(vm.product.sku == "SKU-1234")
+    }
+
     @Test func productTitleIsAccessible() {
         let product = makeProduct(id: "P1")
         let vm = ProductDetailViewModel(product: product)
@@ -73,6 +79,7 @@ struct ProductDetailViewModelTests {
 fileprivate func makeProduct(id: String = "P1") -> Product {
     Product(
         productId: id,
+        sku: "SKU-1234",
         title: "Test Product",
         brand: "Test Brand",
         productDescription: "Test Description",

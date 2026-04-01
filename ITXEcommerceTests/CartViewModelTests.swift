@@ -348,6 +348,7 @@ fileprivate func makeProduct(
 ) -> Product {
     Product(
         productId: id,
+        sku: "SKU-1234",
         title: "Test Product",
         brand: "Test Brand",
         productDescription: "Test Description",

@@ -44,13 +44,13 @@ enum DummyJsonEndpointProvider: EndpointProvider {
         case let .getProducts(pagination):
             guard let pagination else { return nil }
             var items = [
-                URLQueryItem(name: "limit", value: "\(pagination.limit)"),
+                URLQueryItem(name: "limit", value: "\(pagination.limit)")
             ]
 
             if let skip = pagination.skip {
                 items.append(URLQueryItem(name: "skip", value: "\(skip)"))
             }
-            
+
             return items
 
         case .getProductById:

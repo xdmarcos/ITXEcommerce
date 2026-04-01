@@ -6,6 +6,7 @@
 @testable import ITXEcommerce
 import Foundation
 import Testing
+import SwiftUI
 
 @Suite("SettingsViewModel")
 @MainActor
@@ -13,7 +14,7 @@ struct SettingsViewModelTests {
 
     private enum Keys {
         static let colorScheme = "appColorScheme"
-        static let language    = "appLanguage"
+        static let language = "appLanguage"
     }
 
     init() {

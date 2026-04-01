@@ -39,11 +39,11 @@ final class CatalogViewModel {
     var filteredProducts: [Product] {
         let filtered = selectedCategory.map { cat in products.filter { $0.category == cat } } ?? products
         switch selectedSort {
-        case .none:          return filtered
-        case .categoryAZ:    return filtered.sorted { $0.category.displayName < $1.category.displayName }
-        case .categoryZA:    return filtered.sorted { $0.category.displayName > $1.category.displayName }
-        case .priceLowHigh:  return filtered.sorted { $0.price < $1.price }
-        case .priceHighLow:  return filtered.sorted { $0.price > $1.price }
+        case .none: return filtered
+        case .categoryAZ: return filtered.sorted { $0.category.displayName < $1.category.displayName }
+        case .categoryZA: return filtered.sorted { $0.category.displayName > $1.category.displayName }
+        case .priceLowHigh: return filtered.sorted { $0.price < $1.price }
+        case .priceHighLow: return filtered.sorted { $0.price > $1.price }
         }
     }
 

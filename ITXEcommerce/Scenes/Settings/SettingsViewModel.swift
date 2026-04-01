@@ -12,31 +12,31 @@ enum AppColorScheme: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .light:  "Light"
-        case .dark:   "Dark"
+        case .light: "Light"
+        case .dark: "Dark"
         case .system: "Auto"
         }
     }
 
     var colorScheme: ColorScheme? {
         switch self {
-        case .light:  .light
-        case .dark:   .dark
+        case .light: .light
+        case .dark: .dark
         case .system: nil
         }
     }
 }
 
 enum AppLanguage: String, CaseIterable {
-    case english  = "en"
+    case english = "en"
     case galician = "gl"
-    case spanish  = "es"
+    case spanish = "es"
 
     var title: String {
         switch self {
-        case .english:  "English"
+        case .english: "English"
         case .galician: "Galician"
-        case .spanish:  "Spanish"
+        case .spanish: "Spanish"
         }
     }
 
@@ -47,7 +47,7 @@ enum AppLanguage: String, CaseIterable {
 final class SettingsViewModel {
     private enum Keys {
         static let colorScheme = "appColorScheme"
-        static let language    = "appLanguage"
+        static let language = "appLanguage"
     }
 
     private let repository: any ProductRepositoryProtocol

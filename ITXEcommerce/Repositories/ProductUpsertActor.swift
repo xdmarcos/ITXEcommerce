@@ -10,6 +10,7 @@ import SwiftData
 
 struct ProductSnapshot: Sendable {
     let productId: String
+    let sku: String
     let title: String
     let brand: String
     let productDescription: String
@@ -47,6 +48,7 @@ actor ProductUpsertActor {
             } else {
                 modelContext.insert(Product(
                     productId: snapshot.productId,
+                    sku: snapshot.sku,
                     title: snapshot.title,
                     brand: snapshot.brand,
                     productDescription: snapshot.productDescription,

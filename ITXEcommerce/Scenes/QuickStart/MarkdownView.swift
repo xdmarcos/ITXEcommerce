@@ -35,10 +35,9 @@ enum MarkdownBlock {
     case blank
 }
 
-// MARK: - Parser
-
+// swiftlint:disable function_body_length
 private enum MarkdownParser {
-    static func parse(_ content: String) -> [MarkdownBlock] {
+    static func parse(_ content: String) -> [MarkdownBlock] { // swiftlint:disable:this cyclomatic_complexity
         let lines = content.components(separatedBy: .newlines)
         var blocks: [MarkdownBlock] = []
         var index = 0
@@ -138,8 +137,6 @@ private enum MarkdownParser {
     }
 }
 
-// MARK: - Block renderer
-
 private struct MarkdownBlockView: View {
     let block: MarkdownBlock
 
@@ -164,8 +161,6 @@ private struct MarkdownBlockView: View {
         }
     }
 }
-
-// MARK: - Sub-views
 
 private struct HeadingView: View {
     let level: Int
@@ -306,3 +301,4 @@ private struct InlineMarkdownText: View {
         .padding()
     }
 }
+// swiftlint:enable function_body_length

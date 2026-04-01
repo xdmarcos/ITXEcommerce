@@ -24,7 +24,7 @@ struct DetailInformationView: View {
 
                 Spacer()
 
-                Text("Ref: \(viewModel.product.productId)")
+                Text("Ref: \(viewModel.product.sku)")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
