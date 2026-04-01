@@ -78,9 +78,10 @@ final class CatalogViewModel {
         return task
     }
 
-    func loadNextPage() {
-        guard !isLoadingMore, hasMore else { return }
-        Task { await fetchNextPage() }
+    @discardableResult
+    func loadNextPage() -> Task<Void, Never>? {
+        guard !isLoadingMore, hasMore else { return nil }
+        return Task { await fetchNextPage() }
     }
 
     private func fetchProducts() async {

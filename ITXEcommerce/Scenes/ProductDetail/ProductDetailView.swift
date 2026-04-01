@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProductDetailView: View {
     @State private var viewModel: ProductDetailViewModel
+    @State private var justAdded = false
     @Environment(CartViewModel.self) private var cartViewModel
 
     init(product: Product) {
@@ -141,10 +142,19 @@ private extension ProductDetailView {
         return VStack(spacing: 8) {
             Button {
                 cartViewModel.add(product: viewModel.product)
+                withAnimation(.spring(duration: 0.3)) { justAdded = true }
+                Task {
+                    try? await Task.sleep(for: .seconds(1.5))
+                    withAnimation(.spring(duration: 0.3)) { justAdded = false }
+                }
             } label: {
-                Label(canAdd ? "Add to Cart" : "Out of Stock", systemImage: "cart.badge.plus")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 52)
+                Label(
+                    justAdded ? "Added!" : (canAdd ? "Add to Cart" : "Out of Stock"),
+                    systemImage: justAdded ? "checkmark" : "cart.badge.plus"
+                )
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 52)
+                .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)

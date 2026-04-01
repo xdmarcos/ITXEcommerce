@@ -26,6 +26,7 @@ struct CartToolbarButton: View {
     private var cartIcon: some View {
         ZStack(alignment: .topTrailing) {
             Image(systemName: "cart")
+                .symbolEffect(.bounce, value: itemCount)
                 .padding(.top, itemCount > 0 ? 8 : 0)
                 .padding(.trailing, itemCount > 0 ? 10 : 0)
 

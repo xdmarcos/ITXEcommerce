@@ -13,6 +13,7 @@ final class CartViewModel {
     private(set) var items: [CartItem] = []
     private(set) var lastError: Error?
     private(set) var loadTask: Task<Void, Never>?
+    private(set) var checkoutCompleted = false
     var firstLoadCompleted = false
 
     init(repository: any CartRepositoryProtocol) {
@@ -122,8 +123,21 @@ final class CartViewModel {
         lastError = nil
     }
 
-    func checkout() {
-        // TODO: implement checkout flow
+    func clearCheckoutCompleted() {
+        checkoutCompleted = false
+    }
+
+    @discardableResult
+    func checkout() -> Task<Void, Never> {
+        Task { @MainActor in
+            do {
+                try self.repository.clear()
+                self.reload()
+                self.checkoutCompleted = true
+            } catch {
+                self.lastError = error
+            }
+        }
     }
 
     private func reload() {

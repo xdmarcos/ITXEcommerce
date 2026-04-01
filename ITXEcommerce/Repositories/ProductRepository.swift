@@ -72,7 +72,7 @@ extension ProductsDTO {
                 title: dto.title,
                 brand: dto.brand ?? "Generic",
                 productDescription: dto.description,
-                category: ProductCategory(rawValue: dto.category) ?? .tops,
+                category: ProductCategory(rawValue: dto.category) ?? .miscellaneous,
                 price: Decimal(dto.price),
                 discountPercentage: dto.discountPercentage,
                 rating: dto.rating,

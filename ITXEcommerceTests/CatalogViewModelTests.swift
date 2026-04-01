@@ -258,6 +258,34 @@ struct CatalogViewModelTests {
 
     // MARK: Pagination
 
+    @Test func initialHasMoreIsTrue() {
+        let vm = CatalogViewModel(repository: MockProductRepository())
+        #expect(vm.hasMore == true)
+    }
+
+    @Test func initialIsLoadingMoreIsFalse() {
+        let vm = CatalogViewModel(repository: MockProductRepository())
+        #expect(vm.isLoadingMore == false)
+    }
+
+    @Test func firstLoadCompletedIsFalseBeforeFirstAppear() {
+        let vm = CatalogViewModel(repository: MockProductRepository())
+        #expect(vm.firstLoadCompleted == false)
+    }
+
+    @Test func firstLoadCompletedIsTrueAfterFirstAppear() async {
+        let vm = CatalogViewModel(repository: MockProductRepository(products: [makeProduct()]))
+        await vm.onFirstAppear().value
+        #expect(vm.firstLoadCompleted == true)
+    }
+
+    @Test func isLoadingMoreIsFalseAfterLoadCompletes() async {
+        let products = (1...5).map { makeProduct(id: "\($0)") }
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+        #expect(vm.isLoadingMore == false)
+    }
+
     @Test func loadsFirstPageOf20Products() async {
         let products = (1...30).map { makeProduct(id: "\($0)") }
         let vm = CatalogViewModel(repository: MockProductRepository(products: products))
@@ -290,11 +318,34 @@ struct CatalogViewModelTests {
         let vm = CatalogViewModel(repository: MockProductRepository(products: products))
         await vm.onFirstAppear().value
 
-        await Task { vm.loadNextPage() }.value
-        try? await Task.sleep(nanoseconds: 50_000_000)
+        await vm.loadNextPage()?.value
 
         #expect(vm.products.count == 30)
         #expect(vm.hasMore == false)
+    }
+
+    @Test func loadNextPageReturnsNilWhenNoMore() async {
+        let products = (1...5).map { makeProduct(id: "\($0)") }
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        let task = vm.loadNextPage()
+
+        #expect(task == nil)
+        #expect(vm.products.count == 5)
+    }
+
+    @Test func consecutiveLoadNextPageCallsDoNotDuplicateProducts() async {
+        let products = (1...30).map { makeProduct(id: "\($0)") }
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        let t1 = vm.loadNextPage()
+        let t2 = vm.loadNextPage()
+        await t1?.value
+        await t2?.value
+
+        #expect(vm.products.count == 30)
     }
 
     @Test func reloadResetsPaginationState() async {

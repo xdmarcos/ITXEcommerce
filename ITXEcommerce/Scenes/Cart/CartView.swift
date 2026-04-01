@@ -45,6 +45,20 @@ struct CartView: View {
             } message: { error in
                 Text(error.localizedDescription)
             }
+            .alert(
+                "Order Placed!",
+                isPresented: Binding(
+                    get: { cartViewModel.checkoutCompleted },
+                    set: { if !$0 { cartViewModel.clearCheckoutCompleted() } }
+                )
+            ) {
+                Button("OK") {
+                    cartViewModel.clearCheckoutCompleted()
+                    dismiss()
+                }
+            } message: {
+                Text("Your order has been placed successfully. Thank you for shopping with us!")
+            }
         }
     }
 }

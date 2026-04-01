@@ -228,6 +228,52 @@ struct CartViewModelTests {
         #expect(vm.items.isEmpty)
     }
 
+    // MARK: Checkout
+
+    @Test func checkoutCompletedIsFalseInitially() {
+        let vm = CartViewModel(repository: MockCartRepository())
+        #expect(vm.checkoutCompleted == false)
+    }
+
+    @Test func checkoutClearsAllItems() async {
+        let vm = CartViewModel(repository: MockCartRepository())
+        await vm.add(product: makeProduct(id: "P1")).value
+        await vm.add(product: makeProduct(id: "P2")).value
+
+        await vm.checkout().value
+
+        #expect(vm.items.isEmpty)
+        #expect(vm.itemCount == 0)
+    }
+
+    @Test func checkoutSetsCheckoutCompleted() async {
+        let vm = CartViewModel(repository: MockCartRepository())
+        await vm.add(product: makeProduct(id: "P1")).value
+
+        await vm.checkout().value
+
+        #expect(vm.checkoutCompleted == true)
+    }
+
+    @Test func clearCheckoutCompletedResetsFlag() async {
+        let vm = CartViewModel(repository: MockCartRepository())
+        await vm.add(product: makeProduct(id: "P1")).value
+        await vm.checkout().value
+
+        vm.clearCheckoutCompleted()
+
+        #expect(vm.checkoutCompleted == false)
+    }
+
+    @Test func checkoutFailureSetsLastError() async {
+        let vm = CartViewModel(repository: FailingCartRepository())
+
+        await vm.checkout().value
+
+        #expect(vm.lastError != nil)
+        #expect(vm.checkoutCompleted == false)
+    }
+
     // MARK: Error handling
 
     @Test func fetchItemsFailureSetsLastError() async {

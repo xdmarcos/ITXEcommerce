@@ -15,29 +15,39 @@ struct CatalogGridView: View {
     }
 
     var body: some View {
-        ScrollView {
-            LazyVGrid(columns: gridColumns, spacing: 12) {
-                ForEach(viewModel.filteredProducts) { product in
-                    NavigationLink(value: product) {
-                        ProductCardView(
-                            title: product.title,
-                            brand: product.brand,
-                            category: product.category,
-                            price: product.price,
-                            imageURL: URL(string: product.thumbnail),
-                            isCompact: viewModel.columnCount == 3
-                        )
+        if viewModel.filteredProducts.isEmpty,
+           let category = viewModel.selectedCategory,
+           viewModel.firstLoadCompleted {
+            ContentUnavailableView(
+                "No Products",
+                systemImage: "tag.slash",
+                description: Text("There are no products in \(category.displayName).")
+            )
+        } else {
+            ScrollView {
+                LazyVGrid(columns: gridColumns, spacing: 12) {
+                    ForEach(viewModel.filteredProducts) { product in
+                        NavigationLink(value: product) {
+                            ProductCardView(
+                                title: product.title,
+                                brand: product.brand,
+                                category: product.category,
+                                price: product.price,
+                                imageURL: URL(string: product.thumbnail),
+                                isCompact: viewModel.columnCount == 3
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                    if viewModel.hasMore && viewModel.firstLoadCompleted {
+                        Color.clear
+                            .frame(height: 1)
+                            .onAppear { viewModel.loadNextPage() }
+                    }
                 }
-                if viewModel.hasMore && viewModel.firstLoadCompleted {
-                    Color.clear
-                        .frame(height: 1)
-                        .onAppear { viewModel.loadNextPage() }
-                }
+                .padding(12)
             }
-            .padding(12)
+            .scrollIndicators(.hidden)
         }
-        .scrollIndicators(.hidden)
     }
 }
