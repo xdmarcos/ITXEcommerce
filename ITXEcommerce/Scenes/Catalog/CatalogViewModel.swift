@@ -26,7 +26,6 @@ final class CatalogViewModel {
 
     init(repository: any ProductRepositoryProtocol) {
         self.repository = repository
-        loadTask = Task { await self.fetchProducts() }
     }
 
     var viewColumns: ColumnsSelectorButton.ColumnsCount {

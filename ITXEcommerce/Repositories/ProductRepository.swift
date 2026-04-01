@@ -19,18 +19,42 @@ final class ProductRepository: ProductRepositoryProtocol {
     }
 
     func fetchAll() async throws -> [Product] {
-//        try modelContext.fetch(FetchDescriptor<Product>())
-//        Product.mockProducts
         do {
             let response = try await apiClient.asyncRequest(
                 endpoint: DummyJsonEndpointProvider.getProducts(pagination: .init(limit: 0, skip: nil)),
                 responseModel: ProductsDTO.self
             )
-            debugPrint("response: \(response)")
-            return response.asProducts()
+            return try upsert(response.asProducts())
         } catch {
             return Product.mockProducts
         }
+    }
+
+    private func upsert(_ products: [Product]) throws -> [Product] {
+        let existingMap = try modelContext
+            .fetch(FetchDescriptor<Product>())
+            .reduce(into: [String: Product]()) { $0[$1.productId] = $1 }
+
+        for product in products {
+            if let existing = existingMap[product.productId] {
+                existing.title = product.title
+                existing.brand = product.brand
+                existing.productDescription = product.productDescription
+                existing.category = product.category
+                existing.price = product.price
+                existing.discountPercentage = product.discountPercentage
+                existing.rating = product.rating
+                existing.stock = product.stock
+                existing.tags = product.tags
+                existing.thumbnail = product.thumbnail
+                existing.images = product.images
+            } else {
+                modelContext.insert(product)
+            }
+        }
+        try modelContext.save()
+
+        return try modelContext.fetch(FetchDescriptor<Product>())
     }
 
     func fetch(category: ProductCategory?) async throws -> [Product] {

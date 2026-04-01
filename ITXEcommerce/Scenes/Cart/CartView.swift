@@ -11,6 +11,9 @@ struct CartView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(CartViewModel.self) private var cartViewModel
 
+    @State private var stockLimitItem: CartItem?
+    @State private var tooltipTask: Task<Void, Never>?
+
     var body: some View {
         NavigationStack {
             Group {
@@ -43,11 +46,19 @@ struct CartView: View {
                 Text(error.localizedDescription)
             }
         }
-
     }
 }
 
 private extension CartView {
+    func triggerStockTooltip(for item: CartItem) {
+        tooltipTask?.cancel()
+        stockLimitItem = item
+        tooltipTask = Task {
+            try? await Task.sleep(for: .seconds(2))
+            stockLimitItem = nil
+        }
+    }
+
     func makeEmptyState() -> some View {
         ContentUnavailableView(
             "Your Cart is Empty",
@@ -61,8 +72,16 @@ private extension CartView {
             ForEach(cartViewModel.items) { item in
                 CartItemRow(
                     item: item,
+                    showTooltip: stockLimitItem === item,
+                    tooltip: "Max stock reached",
                     decreaseQuantity: { cartViewModel.decreaseQuantity($0) },
-                    increaseQuantity: { cartViewModel.increaseQuantity($0) }
+                    increaseQuantity: {
+                        guard cartViewModel.canIncrease($0) else {
+                            triggerStockTooltip(for: $0)
+                            return
+                        }
+                        cartViewModel.increaseQuantity($0)
+                    }
                 )
             }
             .onDelete { cartViewModel.onDelete($0) }

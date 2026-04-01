@@ -17,7 +17,8 @@ final class CartViewModel {
 
     init(repository: any CartRepositoryProtocol) {
         self.repository = repository
-        loadTask = Task { await self.reload() }
+        // to load carItems on app launch
+        loadTask = Task { self.reload() }
     }
 
     var itemCount: Int {
@@ -32,12 +33,22 @@ final class CartViewModel {
 
     let currency: String = "EUR"
 
+    func canAdd(_ product: Product) -> Bool {
+        let inCart = items.first { $0.product?.productId == product.productId }?.quantity ?? 0
+        return inCart < product.stock
+    }
+
+    func canIncrease(_ item: CartItem) -> Bool {
+        guard let product = item.product else { return false }
+        return item.quantity < product.stock
+    }
+
     @discardableResult
     func onFirstAppear() -> Task<Void, Never> {
         if let loadTask { return loadTask }
-        let task = Task {
-            defer { firstLoadCompleted = true }
-            await self.reload()
+        let task = Task { @MainActor in
+            defer { self.firstLoadCompleted = true }
+            self.reload()
         }
         loadTask = task
         return task
@@ -45,52 +56,54 @@ final class CartViewModel {
 
     @discardableResult
     func add(product: Product) -> Task<Void, Never> {
-        Task {
+        Task { @MainActor in
+            guard self.canAdd(product) else { return }
             do {
-                try await repository.add(product: product)
-                await reload()
+                try self.repository.add(product: product)
+                self.reload()
             } catch {
-                lastError = error
+                self.lastError = error
             }
         }
     }
 
     @discardableResult
     func increaseQuantity(_ item: CartItem) -> Task<Void, Never> {
-        Task {
+        Task { @MainActor in
+            guard self.canIncrease(item) else { return }
             do {
-                try await repository.updateQuantity(item, to: item.quantity + 1)
-                await reload()
+                try self.repository.updateQuantity(item, to: item.quantity + 1)
+                self.reload()
             } catch {
-                lastError = error
+                self.lastError = error
             }
         }
     }
 
     @discardableResult
     func decreaseQuantity(_ item: CartItem) -> Task<Void, Never> {
-        Task {
+        Task { @MainActor in
             do {
                 if item.quantity > 1 {
-                    try await repository.updateQuantity(item, to: item.quantity - 1)
+                    try self.repository.updateQuantity(item, to: item.quantity - 1)
                 } else {
-                    try await repository.remove(item)
+                    try self.repository.remove(item)
                 }
-                await reload()
+                self.reload()
             } catch {
-                lastError = error
+                self.lastError = error
             }
         }
     }
 
     @discardableResult
     func remove(_ item: CartItem) -> Task<Void, Never> {
-        Task {
+        Task { @MainActor in
             do {
-                try await repository.remove(item)
-                await reload()
+                try self.repository.remove(item)
+                self.reload()
             } catch {
-                lastError = error
+                self.lastError = error
             }
         }
     }
@@ -98,9 +111,9 @@ final class CartViewModel {
     @discardableResult
     func onDelete(_ indexSet: IndexSet) -> Task<Void, Never> {
         let itemsToDelete = indexSet.map { items[$0] }
-        return Task {
+        return Task { @MainActor in
             for item in itemsToDelete {
-                await remove(item).value
+                await self.remove(item).value
             }
         }
     }
@@ -113,9 +126,9 @@ final class CartViewModel {
         // TODO: implement checkout flow
     }
 
-    private func reload() async {
+    private func reload() {
         do {
-            items = try await repository.fetchItems()
+            items = try repository.fetchItems()
         } catch {
             lastError = error
         }

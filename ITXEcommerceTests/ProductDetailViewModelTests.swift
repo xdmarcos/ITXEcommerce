@@ -13,11 +13,6 @@ struct ProductDetailViewModelTests {
 
     // MARK: Initial state
 
-    @Test func initialSelectedSizeIsNil() {
-        let vm = ProductDetailViewModel(product: makeProduct())
-        #expect(vm.showCartDetail == false)
-    }
-
     @Test func initialShowCartDetailIsFalse() {
         let vm = ProductDetailViewModel(product: makeProduct())
         #expect(vm.showCartDetail == false)

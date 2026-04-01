@@ -8,7 +8,6 @@
 import Foundation
 import SwiftData
 
-@MainActor
 final class CartRepository: CartRepositoryProtocol {
     private let modelContext: ModelContext
 
@@ -16,12 +15,12 @@ final class CartRepository: CartRepositoryProtocol {
         self.modelContext = modelContext
     }
 
-    func fetchItems() async throws -> [CartItem] {
+    func fetchItems() throws -> [CartItem] {
         try modelContext.fetch(FetchDescriptor<CartItem>())
     }
 
-    func add(product: Product) async throws {
-        let items = try await fetchItems()
+    func add(product: Product) throws {
+        let items = try fetchItems()
         if let existing = items.first(where: { $0.product?.productId == product.productId }) {
             existing.quantity += 1
         } else {
@@ -30,18 +29,18 @@ final class CartRepository: CartRepositoryProtocol {
         try modelContext.save()
     }
 
-    func updateQuantity(_ item: CartItem, to quantity: Int) async throws {
+    func updateQuantity(_ item: CartItem, to quantity: Int) throws {
         item.quantity = quantity
         try modelContext.save()
     }
 
-    func remove(_ item: CartItem) async throws {
+    func remove(_ item: CartItem) throws {
         modelContext.delete(item)
         try modelContext.save()
     }
 
-    func clear() async throws {
-        try await fetchItems().forEach { modelContext.delete($0) }
+    func clear() throws {
+        try fetchItems().forEach { modelContext.delete($0) }
         try modelContext.save()
     }
 }

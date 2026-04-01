@@ -137,15 +137,28 @@ private extension ProductDetailView {
     }
 
     func makeAddToCartButton() -> some View {
-        Button {
-            cartViewModel.add(product: viewModel.product)
-        } label: {
-            Label("Add to Cart", systemImage: "cart.badge.plus")
-                .font(.headline)
-                .frame(maxWidth: .infinity, minHeight: 52)
+        let canAdd = cartViewModel.canAdd(viewModel.product)
+        return VStack(spacing: 8) {
+            Button {
+                cartViewModel.add(product: viewModel.product)
+            } label: {
+                Label(canAdd ? "Add to Cart" : "Out of Stock", systemImage: "cart.badge.plus")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 52)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(!canAdd)
+
+            if !canAdd {
+                Text("You've added all available stock to your cart.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
+        .animation(.easeInOut, value: canAdd)
     }
 }
 

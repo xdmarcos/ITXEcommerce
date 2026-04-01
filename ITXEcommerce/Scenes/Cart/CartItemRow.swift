@@ -9,15 +9,21 @@ import SwiftUI
 
 struct CartItemRow: View {
     let item: CartItem
+    var showTooltip: Bool = false
+    var tooltip: String?
     var decreaseQuantity: (CartItem) -> Void = { _ in }
     var increaseQuantity: (CartItem) -> Void = { _ in }
 
     init(
         item: CartItem,
+        showTooltip: Bool = false,
+        tooltip: String? = nil,
         decreaseQuantity: @escaping (CartItem) -> Void = { _ in },
         increaseQuantity: @escaping (CartItem) -> Void = { _ in }
     ) {
         self.item = item
+        self.showTooltip = showTooltip
+        self.tooltip = tooltip
         self.decreaseQuantity = decreaseQuantity
         self.increaseQuantity = increaseQuantity
     }
@@ -81,8 +87,24 @@ struct CartItemRow: View {
             }
             .accessibilityLabel("Increase quantity")
         }
+        .buttonStyle(.borderless)
         .background(.secondary.opacity(0.1))
         .clipShape(.rect(cornerRadius: 8))
+        .overlay(alignment: .top) {
+            if showTooltip {
+                Text(tooltip ?? "Limit reached")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.ultraThinMaterial, in: .capsule)
+                    .fixedSize()
+                    .offset(y: -30)
+                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+                    .allowsHitTesting(false)
+            }
+        }
+        .animation(.spring(duration: 0.25), value: showTooltip)
     }
 }
 

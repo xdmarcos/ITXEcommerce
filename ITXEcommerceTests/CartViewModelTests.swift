@@ -47,7 +47,7 @@ struct CartViewModelTests {
     @Test func addingSameProductIncrementsQuantityOnExistingItem() async {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        let product = makeProduct(id: "P1")
+        let product = makeProduct(id: "P1", stock: 5)
         await vm.add(product: product).value
         await vm.add(product: product).value
 
@@ -55,7 +55,7 @@ struct CartViewModelTests {
         #expect(vm.itemCount == 2)
     }
 
-    @Test func addingDifferentProductsCreatesSeperateCartItems() async {
+    @Test func addingDifferentProductsCreatesSeparateCartItems() async {
         let vm = CartViewModel(repository: MockCartRepository())
 
         await vm.add(product: makeProduct(id: "P1")).value
@@ -63,6 +63,73 @@ struct CartViewModelTests {
 
         #expect(vm.items.count == 2)
         #expect(vm.itemCount == 2)
+    }
+
+    // MARK: Stock limit — add
+
+    @Test func canAddReturnsTrueWhenBelowStockLimit() {
+        let vm = CartViewModel(repository: MockCartRepository())
+        let product = makeProduct(id: "P1", stock: 3)
+        #expect(vm.canAdd(product) == true)
+    }
+
+    @Test func canAddReturnsFalseWhenStockIsZero() {
+        let vm = CartViewModel(repository: MockCartRepository())
+        let product = makeProduct(id: "P1", stock: 0)
+        #expect(vm.canAdd(product) == false)
+    }
+
+    @Test func canAddReturnsFalseWhenCartQuantityMatchesStock() async {
+        let vm = CartViewModel(repository: MockCartRepository())
+        let product = makeProduct(id: "P1", stock: 1)
+
+        await vm.add(product: product).value
+
+        #expect(vm.canAdd(product) == false)
+    }
+
+    @Test func addDoesNothingWhenAtStockLimit() async {
+        let vm = CartViewModel(repository: MockCartRepository())
+        let product = makeProduct(id: "P1", stock: 1)
+
+        await vm.add(product: product).value
+        await vm.add(product: product).value  // should be ignored
+
+        #expect(vm.itemCount == 1)
+    }
+
+    // MARK: Stock limit — increase
+
+    @Test func canIncreaseReturnsTrueWhenBelowStockLimit() async {
+        let vm = CartViewModel(repository: MockCartRepository())
+        let product = makeProduct(id: "P1", stock: 2)
+
+        await vm.add(product: product).value
+
+        let item = vm.items.first!  // swiftlint:disable:this force_unwrapping
+        #expect(vm.canIncrease(item) == true)
+    }
+
+    @Test func canIncreaseReturnsFalseWhenAtStockLimit() async {
+        let vm = CartViewModel(repository: MockCartRepository())
+        let product = makeProduct(id: "P1", stock: 1)
+
+        await vm.add(product: product).value
+
+        let item = vm.items.first!  // swiftlint:disable:this force_unwrapping
+        #expect(vm.canIncrease(item) == false)
+    }
+
+    @Test func increaseQuantityDoesNothingWhenAtStockLimit() async throws {
+        let vm = CartViewModel(repository: MockCartRepository())
+        let product = makeProduct(id: "P1", stock: 1)
+
+        await vm.add(product: product).value
+
+        let item = try #require(vm.items.first)
+        await vm.increaseQuantity(item).value
+
+        #expect(vm.itemCount == 1)
     }
 
     // MARK: Total price
@@ -79,7 +146,7 @@ struct CartViewModelTests {
     @Test func totalPriceMultipliesPriceByQuantity() async {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        let product = makeProduct(id: "P1", price: 15.00)
+        let product = makeProduct(id: "P1", price: 15.00, stock: 5)
         await vm.add(product: product).value
         await vm.add(product: product).value
 
@@ -91,7 +158,7 @@ struct CartViewModelTests {
     @Test func increaseQuantityAddsOne() async throws {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        await vm.add(product: makeProduct(id: "P1")).value
+        await vm.add(product: makeProduct(id: "P1", stock: 5)).value
 
         let item = try #require(vm.items.first)
         await vm.increaseQuantity(item).value
@@ -102,7 +169,7 @@ struct CartViewModelTests {
     @Test func decreaseQuantityAboveOneDecrementsCount() async throws {
         let vm = CartViewModel(repository: MockCartRepository())
 
-        let product = makeProduct(id: "P1")
+        let product = makeProduct(id: "P1", stock: 5)
         await vm.add(product: product).value
         await vm.add(product: product).value
 
@@ -150,6 +217,17 @@ struct CartViewModelTests {
         #expect(vm.items.count == 1)
     }
 
+    @Test func onDeleteRemovesAllItemsWhenFullIndexSetGiven() async {
+        let vm = CartViewModel(repository: MockCartRepository())
+
+        await vm.add(product: makeProduct(id: "P1")).value
+        await vm.add(product: makeProduct(id: "P2")).value
+
+        await vm.onDelete(IndexSet([0, 1])).value
+
+        #expect(vm.items.isEmpty)
+    }
+
     // MARK: Error handling
 
     @Test func fetchItemsFailureSetsLastError() async {
@@ -166,13 +244,50 @@ struct CartViewModelTests {
 
         #expect(vm.lastError == nil)
     }
+
+    @Test func addFailureSetsLastError() async {
+        let vm = CartViewModel(repository: FailingCartRepository())
+        let product = makeProduct(id: "P1", stock: 5)
+
+        await vm.add(product: product).value
+
+        #expect(vm.lastError != nil)
+    }
+
+    @Test func increaseQuantityFailureSetsLastError() async {
+        let vm = CartViewModel(repository: FailingCartRepository())
+        let item = CartItem(product: makeProduct(id: "P1", stock: 5))
+
+        await vm.increaseQuantity(item).value
+
+        #expect(vm.lastError != nil)
+    }
+
+    @Test func decreaseQuantityFailureSetsLastError() async {
+        let vm = CartViewModel(repository: FailingCartRepository())
+        let item = CartItem(product: makeProduct(id: "P1"))
+
+        await vm.decreaseQuantity(item).value
+
+        #expect(vm.lastError != nil)
+    }
+
+    @Test func removeFailureSetsLastError() async {
+        let vm = CartViewModel(repository: FailingCartRepository())
+        let item = CartItem(product: makeProduct(id: "P1"))
+
+        await vm.remove(item).value
+
+        #expect(vm.lastError != nil)
+    }
 }
 
 // MARK: - Helpers
 
 fileprivate func makeProduct(
     id: String = UUID().uuidString,
-    price: Decimal = 10.00
+    price: Decimal = 10.00,
+    stock: Int = 1
 ) -> Product {
     Product(
         productId: id,
@@ -180,15 +295,16 @@ fileprivate func makeProduct(
         brand: "Test Brand",
         productDescription: "Test Description",
         category: .beauty,
-        price: price
+        price: price,
+        stock: stock
     )
 }
 
 fileprivate final class FailingCartRepository: CartRepositoryProtocol {
     struct CartError: Error {}
-    func fetchItems() async throws -> [CartItem] { throw CartError() }
-    func add(product: Product) async throws { throw CartError() }
-    func updateQuantity(_ item: CartItem, to quantity: Int) async throws { throw CartError() }
-    func remove(_ item: CartItem) async throws { throw CartError() }
-    func clear() async throws { throw CartError() }
+    func fetchItems() throws -> [CartItem] { throw CartError() }
+    func add(product: Product) throws { throw CartError() }
+    func updateQuantity(_ item: CartItem, to quantity: Int) throws { throw CartError() }
+    func remove(_ item: CartItem) throws { throw CartError() }
+    func clear() throws { throw CartError() }
 }
