@@ -19,21 +19,18 @@ struct ImageGalleryView: View {
     var body: some View {
         TabView(selection: currentImageIndex) {
             ForEach(images.indices, id: \.self) { index in
-                AsyncImage(url: URL(string: images[index])) { phase in
-                    switch phase {
-                    case let .success(image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    default:
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.12))
-                            .overlay {
-                                Image(systemName: "photo")
-                                    .foregroundStyle(.tertiary)
-                                    .font(.largeTitle)
-                            }
-                    }
+                CachedAsyncImage(url: URL(string: images[index])) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Rectangle()
+                        .foregroundStyle(.secondary.opacity(0.12))
+                        .overlay {
+                            Image(systemName: "photo")
+                                .foregroundStyle(.tertiary)
+                                .font(.largeTitle)
+                        }
                 }
                 .tag(index)
                 .clipped()

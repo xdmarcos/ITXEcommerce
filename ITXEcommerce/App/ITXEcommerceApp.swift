@@ -15,6 +15,8 @@ struct ITXEcommerceApp: App {
     private let productRepository: any ProductRepositoryProtocol
 
     init() {
+        CachedAsyncImageConfiguration.setMemoryCostLimit(50 * 1024 * 1024)
+
         do {
             let container = try ModelContainer(for: Product.self, CartItem.self)
             self.container = container

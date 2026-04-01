@@ -37,13 +37,11 @@ struct ProductCardView: View {
                 .foregroundStyle(.secondary.opacity(0.12))
                 .aspectRatio(3/4, contentMode: .fit)
                 .overlay {
-                    AsyncImage(url: imageURL) { phase in
-                        if case .success(let image) = phase {
-                            image.resizable().scaledToFit()
-                        } else {
-                            Image(systemName: "photo")
-                                .foregroundStyle(.tertiary)
-                        }
+                    CachedAsyncImage(url: imageURL) { image in
+                        image.resizable().scaledToFit()
+                    } placeholder: {
+                        Image(systemName: "photo")
+                            .foregroundStyle(.tertiary)
                     }
                 }
                 .clipped()
