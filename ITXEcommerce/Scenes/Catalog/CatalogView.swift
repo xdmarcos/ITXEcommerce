@@ -18,7 +18,10 @@ struct CatalogView: View {
     var body: some View {
         NavigationSplitView {
             CatalogGridView(viewModel: viewModel)
-                .navigationTitle("Catalog [\(viewModel.filteredProducts.count)]")
+                .task {
+                    viewModel.onFirstAppear()
+                }
+                .navigationTitle(viewModel.filteredProducts.isEmpty ? "Catalog" : "Catalog [\(viewModel.filteredProducts.count)]")
                 .navigationDestination(for: Product.self) { product in
                     ProductDetailView(product: product)
                         .id(product.productId)
@@ -29,9 +32,24 @@ struct CatalogView: View {
                             viewModel.columnsSelectorButtonOnTap()
                         }
 
-                        CategorySelectorButton(
+                        MenuSelectorButton(
                             selectedCategory: $viewModel.selectedCategory,
-                            allCases: viewModel.allCategories
+                            allCases: viewModel.allCategories,
+                            title: "Category",
+                            resetTitle: "All",
+                            checkedSystemName: "line.3.horizontal.decrease.circle.fill",
+                            uncheckedSystemName: "line.3.horizontal.decrease.circle",
+                            accessibilityLabel: "Filter by category"
+                        )
+
+                        MenuSelectorButton(
+                            selectedCategory: $viewModel.selectedSort,
+                            allCases: viewModel.allSortOption,
+                            title: "Sort by",
+                            resetTitle: "Default",
+                            checkedSystemName: "arrow.up.arrow.down.square.fill",
+                            uncheckedSystemName: "arrow.up.arrow.down.square",
+                            accessibilityLabel: "Sort products by"
                         )
                     }
                     if #available(iOS 26.0, *) {

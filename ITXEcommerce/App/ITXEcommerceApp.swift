@@ -13,13 +13,18 @@ struct ITXEcommerceApp: App {
     private let container: ModelContainer
     private let cartViewModel: CartViewModel
     private let productRepository: any ProductRepositoryProtocol
+    private let settingsViewModel: SettingsViewModel
 
     init() {
+        CachedAsyncImageConfiguration.setMemoryCostLimit(50 * 1024 * 1024)
+
         do {
             let container = try ModelContainer(for: Product.self, CartItem.self)
             self.container = container
+            let productRepository = ProductRepository(modelContainer: container)
+            self.productRepository = productRepository
             self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
-            self.productRepository = ProductRepository(modelContext: container.mainContext)
+            self.settingsViewModel = SettingsViewModel(repository: productRepository)
         } catch {
             fatalError("ModelContainer init failed: \(error)")
         }
@@ -29,6 +34,7 @@ struct ITXEcommerceApp: App {
         WindowGroup {
             RootView()
                 .environment(cartViewModel)
+                .environment(settingsViewModel)
                 .environment(\.productRepository, productRepository)
         }
         .modelContainer(container)

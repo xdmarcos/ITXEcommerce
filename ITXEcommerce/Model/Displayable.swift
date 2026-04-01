@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 protocol Displayable: Hashable {
     var displayName: String { get }

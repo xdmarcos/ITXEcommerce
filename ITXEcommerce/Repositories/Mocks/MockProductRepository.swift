@@ -22,4 +22,11 @@ final class MockProductRepository: ProductRepositoryProtocol {
         guard let category else { return products }
         return products.filter { $0.category == category }
     }
+
+    func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) {
+        let page = Array(products.dropFirst(skip).prefix(limit))
+        return (page, products.count)
+    }
+
+    func clearCache() throws {}
 }

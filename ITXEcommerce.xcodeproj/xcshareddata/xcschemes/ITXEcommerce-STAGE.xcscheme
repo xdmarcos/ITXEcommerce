@@ -27,8 +27,13 @@
       buildConfiguration = "Debug_STAGE"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:ITXEcommerce/App/Configuration/ITXEcommerce-STAGE.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+      </TestPlans>
       <Testables>
          <TestableReference
             skipped = "NO"
@@ -38,17 +43,6 @@
                BlueprintIdentifier = "7AAFF7E62F76D6AF00C9B9A8"
                BuildableName = "ITXEcommerceTests.xctest"
                BlueprintName = "ITXEcommerceTests"
-               ReferencedContainer = "container:ITXEcommerce.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7AAFF7F02F76D6AF00C9B9A8"
-               BuildableName = "ITXEcommerceUITests.xctest"
-               BlueprintName = "ITXEcommerceUITests"
                ReferencedContainer = "container:ITXEcommerce.xcodeproj">
             </BuildableReference>
          </TestableReference>

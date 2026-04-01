@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProductDetailView: View {
     @State private var viewModel: ProductDetailViewModel
+    @State private var justAdded = false
     @Environment(CartViewModel.self) private var cartViewModel
 
     init(product: Product) {
@@ -22,19 +23,16 @@ struct ProductDetailView: View {
                 makeInfoSection()
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
-                makeVariantSection()
+                makeMetaSection()
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                makeSizeSection()
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    .padding(.top, 16)
                 makeAddToCartButton()
                     .padding(.horizontal, 20)
                     .padding(.vertical, 24)
             }
         }
         .scrollIndicators(.hidden)
-        .navigationTitle(viewModel.product.name)
+        .navigationTitle(viewModel.product.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -54,7 +52,7 @@ struct ProductDetailView: View {
 private extension ProductDetailView {
     func makeImageGallery() -> some View {
         ImageGalleryView(
-            images: viewModel.activeVariant?.imageURLs ?? [],
+            images: viewModel.product.images,
             currentImageIndex: $viewModel.currentImageIndex
         )
         .frame(height: 460)
@@ -80,7 +78,7 @@ private extension ProductDetailView {
                     .foregroundStyle(.tertiary)
             }
 
-            Text(viewModel.product.name)
+            Text(viewModel.product.title)
                 .font(.title2)
                 .fontWeight(.semibold)
 
@@ -88,7 +86,7 @@ private extension ProductDetailView {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            Text(viewModel.product.price, format: .currency(code: viewModel.product.currency))
+            Text(viewModel.product.price, format: .currency(code: "EUR"))
                 .font(.title3)
                 .fontWeight(.medium)
                 .padding(.top, 4)
@@ -101,75 +99,38 @@ private extension ProductDetailView {
         }
     }
 
-    func makeVariantSection() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Colour")
+    func makeMetaSection() -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 16) {
+                Label(String(format: "%.1f", viewModel.product.rating), systemImage: "star.fill")
                     .font(.subheadline)
-                    .fontWeight(.medium)
-                if let name = viewModel.activeVariant?.colorName {
-                    Text("— \(name)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    .foregroundStyle(.orange)
+
+                if viewModel.product.discountPercentage > 0 {
+                    Label(
+                        String(format: "-%.0f%%", viewModel.product.discountPercentage),
+                        systemImage: "tag.fill"
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.green)
                 }
+
+                Label("\(viewModel.product.stock) in stock", systemImage: "shippingbox")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
 
-            ScrollView(.horizontal) {
-                HStack(spacing: 12) {
-                    ForEach(viewModel.product.variants) { variant in
-                        Button {
-                            viewModel.selectVariant(variant)
-                        } label: {
-                            Circle()
-                                .fill(Color(hex: variant.colorHex))
-                                .frame(width: 36, height: 36)
-                                .overlay {
-                                    Circle()
-                                        .strokeBorder(
-                                            viewModel.activeVariant?.id == variant.id ? Color.primary : Color.clear,
-                                            lineWidth: 2
-                                        )
-                                        .padding(-4)
-                                }
+            if !viewModel.product.tags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(viewModel.product.tags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.caption)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(.secondary.opacity(0.12))
+                                .clipShape(.capsule)
                         }
-                        .accessibilityLabel(variant.colorName)
-                    }
-                }
-                .padding(4)
-            }
-            .scrollIndicators(.hidden)
-        }
-    }
-
-    func makeSizeSection() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Size")
-                .font(.subheadline)
-                .fontWeight(.medium)
-
-            ScrollView(.horizontal) {
-                HStack(spacing: 8) {
-                    ForEach(ProductSize.allCases, id: \.self) { size in
-                        let isAvailable = viewModel.isSizeAvailable(size)
-                        let isSelected = viewModel.selectedSize == size
-
-                        Button {
-                            viewModel.selectSize(size)
-                        } label: {
-                            Text(size.rawValue)
-                                .font(.subheadline)
-                                .fontWeight(isSelected ? .semibold : .regular)
-                                .frame(minWidth: 52, minHeight: 44)
-                                .background(isSelected ? Color.primary : Color.secondary.opacity(0.1))
-                                .foregroundStyle(isSelected ? Color(.systemBackground) : isAvailable ? .primary : .primary.opacity(0.3))
-                                .clipShape(.rect(cornerRadius: 8))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.secondary.opacity(isAvailable ? 0 : 0.2))
-                                }
-                        }
-                        .disabled(!isAvailable)
-                        .accessibilityLabel("\(size.rawValue)\(isAvailable ? "" : ", unavailable")")
                     }
                 }
             }
@@ -177,17 +138,37 @@ private extension ProductDetailView {
     }
 
     func makeAddToCartButton() -> some View {
-        Button {
-            guard let size = viewModel.selectedSize, let variant = viewModel.activeVariant else { return }
-            cartViewModel.add(product: viewModel.product, size: size, variantId: variant.id)
-        } label: {
-            Label("Add to Cart", systemImage: "cart.badge.plus")
+        let canAdd = cartViewModel.canAdd(viewModel.product)
+        return VStack(spacing: 8) {
+            Button {
+                cartViewModel.add(product: viewModel.product)
+                withAnimation(.spring(duration: 0.3)) { justAdded = true }
+                Task {
+                    try? await Task.sleep(for: .seconds(1.5))
+                    withAnimation(.spring(duration: 0.3)) { justAdded = false }
+                }
+            } label: {
+                Label(
+                    justAdded ? "Added!" : (canAdd ? "Add to Cart" : "Out of Stock"),
+                    systemImage: justAdded ? "checkmark" : "cart.badge.plus"
+                )
                 .font(.headline)
                 .frame(maxWidth: .infinity, minHeight: 52)
+                .contentTransition(.symbolEffect(.replace))
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(!canAdd)
+
+            if !canAdd {
+                Text("You've added all available stock to your cart.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .disabled(viewModel.selectedSize == nil)
+        .animation(.easeInOut, value: canAdd)
     }
 }
 

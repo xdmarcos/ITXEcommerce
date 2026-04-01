@@ -11,6 +11,9 @@ struct CartView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(CartViewModel.self) private var cartViewModel
 
+    @State private var stockLimitItem: CartItem?
+    @State private var tooltipTask: Task<Void, Never>?
+
     var body: some View {
         NavigationStack {
             Group {
@@ -19,6 +22,9 @@ struct CartView: View {
                 } else {
                     makeCartList()
                 }
+            }
+            .task {
+                cartViewModel.onFirstAppear()
             }
             .navigationTitle("My Cart")
             .navigationBarTitleDisplayMode(.inline)
@@ -39,11 +45,34 @@ struct CartView: View {
             } message: { error in
                 Text(error.localizedDescription)
             }
+            .alert(
+                "Order Placed!",
+                isPresented: Binding(
+                    get: { cartViewModel.checkoutCompleted },
+                    set: { if !$0 { cartViewModel.clearCheckoutCompleted() } }
+                )
+            ) {
+                Button("OK") {
+                    cartViewModel.clearCheckoutCompleted()
+                    dismiss()
+                }
+            } message: {
+                Text("Your order has been placed successfully. Thank you for shopping with us!")
+            }
         }
     }
 }
 
 private extension CartView {
+    func triggerStockTooltip(for item: CartItem) {
+        tooltipTask?.cancel()
+        stockLimitItem = item
+        tooltipTask = Task {
+            try? await Task.sleep(for: .seconds(2))
+            stockLimitItem = nil
+        }
+    }
+
     func makeEmptyState() -> some View {
         ContentUnavailableView(
             "Your Cart is Empty",
@@ -57,8 +86,16 @@ private extension CartView {
             ForEach(cartViewModel.items) { item in
                 CartItemRow(
                     item: item,
+                    showTooltip: stockLimitItem === item,
+                    tooltip: "Max stock reached",
                     decreaseQuantity: { cartViewModel.decreaseQuantity($0) },
-                    increaseQuantity: { cartViewModel.increaseQuantity($0) }
+                    increaseQuantity: {
+                        guard cartViewModel.canIncrease($0) else {
+                            triggerStockTooltip(for: $0)
+                            return
+                        }
+                        cartViewModel.increaseQuantity($0)
+                    }
                 )
             }
             .onDelete { cartViewModel.onDelete($0) }
