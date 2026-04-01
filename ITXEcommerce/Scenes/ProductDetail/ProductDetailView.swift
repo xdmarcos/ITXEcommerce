@@ -37,14 +37,9 @@ struct ProductDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 CartToolbarButton(itemCount: cartViewModel.itemCount) {
-                    viewModel.cartButtonOnTap()
+                    cartViewModel.cartButtonOnTap()
                 }
             }
-        }
-        .sheet(isPresented: $viewModel.showCartDetail) {
-            CartView()
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
         }
     }
 }

@@ -14,7 +14,9 @@ final class CartViewModel {
     private(set) var lastError: Error?
     private(set) var loadTask: Task<Void, Never>?
     private(set) var checkoutCompleted = false
+    let currency = "EUR"
     var firstLoadCompleted = false
+    var showCartDetail = false
 
     init(repository: any CartRepositoryProtocol) {
         self.repository = repository
@@ -32,7 +34,9 @@ final class CartViewModel {
         }
     }
 
-    let currency: String = "EUR"
+    func cartButtonOnTap() {
+        showCartDetail = true
+    }
 
     func canAdd(_ product: Product) -> Bool {
         let inCart = items.first { $0.product?.productId == product.productId }?.quantity ?? 0

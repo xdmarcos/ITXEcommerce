@@ -20,7 +20,6 @@ final class CatalogViewModel {
     var selectedCategory: ProductCategory?
     var selectedSort: ProductSortOption?
     var selectedProduct: Product?
-    var showCartDetail = false
     var showErrorAlert = false
     var firstLoadCompleted = false
     private(set) var isLoadingMore = false
@@ -62,10 +61,6 @@ final class CatalogViewModel {
     func clearLoadError() {
         loadError = nil
         showErrorAlert = false
-    }
-
-    func cartButtonOnTap() {
-        showCartDetail = true
     }
 
     func columnsSelectorButtonOnTap() {

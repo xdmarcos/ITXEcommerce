@@ -18,11 +18,6 @@ struct CatalogViewModelTests {
         #expect(vm.columnCount == 2)
     }
 
-    @Test func initialShowCartDetailIsFalse() {
-        let vm = CatalogViewModel(repository: MockProductRepository())
-        #expect(vm.showCartDetail == false)
-    }
-
     @Test func initialSelectedCategoryIsNil() {
         let vm = CatalogViewModel(repository: MockProductRepository())
         #expect(vm.selectedCategory == nil)
@@ -246,14 +241,6 @@ struct CatalogViewModelTests {
         #expect(vm.viewColumns == .two)
         vm.columnsSelectorButtonOnTap()
         #expect(vm.viewColumns == .three)
-    }
-
-    // MARK: Cart button
-
-    @Test func cartButtonOnTapSetsShowCartDetail() {
-        let vm = CatalogViewModel(repository: MockProductRepository())
-        vm.cartButtonOnTap()
-        #expect(vm.showCartDetail == true)
     }
 
     // MARK: Pagination

@@ -13,11 +13,6 @@ struct ProductDetailViewModelTests {
 
     // MARK: Initial state
 
-    @Test func initialShowCartDetailIsFalse() {
-        let vm = ProductDetailViewModel(product: makeProduct())
-        #expect(vm.showCartDetail == false)
-    }
-
     @Test func initialCurrentImageIndexIsZero() {
         let vm = ProductDetailViewModel(product: makeProduct())
         #expect(vm.currentImageIndex == 0)
@@ -71,15 +66,6 @@ struct ProductDetailViewModelTests {
         #expect(vm.product.tags == ["test", "mock"])
     }
 
-    // MARK: Cart button
-
-    @Test func cartButtonOnTapSetsShowCartDetail() {
-        let vm = ProductDetailViewModel(product: makeProduct())
-
-        vm.cartButtonOnTap()
-
-        #expect(vm.showCartDetail == true)
-    }
 }
 
 // MARK: - Helpers

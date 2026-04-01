@@ -33,6 +33,17 @@ struct CartViewModelTests {
         #expect(vm.items.isEmpty)
     }
 
+    @Test func initialShowCartDetailIsFalse() {
+        let vm = CartViewModel(repository: MockCartRepository())
+        #expect(vm.showCartDetail == false)
+    }
+
+    @Test func settingShowCartDetailToTrueOpensCart() {
+        let vm = CartViewModel(repository: MockCartRepository())
+        vm.showCartDetail = true
+        #expect(vm.showCartDetail == true)
+    }
+
     // MARK: Add to cart
 
     @Test func addProductIncreasesItemCount() async {

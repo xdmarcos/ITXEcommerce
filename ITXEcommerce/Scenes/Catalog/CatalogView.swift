@@ -18,6 +18,7 @@ struct CatalogView: View {
     var body: some View {
         NavigationSplitView {
             CatalogGridView(viewModel: viewModel)
+                .navigationSplitViewColumnWidth(min: 320, ideal: 420)
                 .task {
                     viewModel.onFirstAppear()
                 }
@@ -57,11 +58,11 @@ struct CatalogView: View {
                     }
                     ToolbarItemGroup(placement: .topBarTrailing) {
                         CartToolbarButton(itemCount: cartViewModel.itemCount) {
-                            viewModel.cartButtonOnTap()
+                            cartViewModel.cartButtonOnTap()
                         }
                     }
                 }
-                .sheet(isPresented: $viewModel.showCartDetail) {
+                .sheet(isPresented: cartDetailBinding) {
                     CartView()
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
@@ -83,6 +84,16 @@ struct CatalogView: View {
                 systemImage: "square.grid.3x3"
             )
         }
+        .navigationSplitViewStyle(.balanced)
+    }
+}
+
+private extension CatalogView {
+    var cartDetailBinding: Binding<Bool> {
+        Binding(
+            get: { cartViewModel.showCartDetail },
+            set: { cartViewModel.showCartDetail = $0 }
+        )
     }
 }
 

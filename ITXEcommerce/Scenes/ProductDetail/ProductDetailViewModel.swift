@@ -11,14 +11,9 @@ import Foundation
 final class ProductDetailViewModel {
     let product: Product
 
-    var showCartDetail = false
-    var currentImageIndex: Int = 0
+    var currentImageIndex = 0
 
     init(product: Product) {
         self.product = product
-    }
-
-    func cartButtonOnTap() {
-        showCartDetail = true
     }
 }
