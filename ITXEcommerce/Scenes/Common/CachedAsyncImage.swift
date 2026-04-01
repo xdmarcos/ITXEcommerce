@@ -49,12 +49,14 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     }
 
     var body: some View {
-        if let uiImage {
-            content(Image(uiImage: uiImage))
-        } else {
-            placeholder()
-                .task(id: url) { await load() }
+        ZStack {
+            if let uiImage {
+                content(Image(uiImage: uiImage))
+            } else {
+                placeholder()
+            }
         }
+        .task(id: url) { await load() }
     }
 
     private func load() async {
