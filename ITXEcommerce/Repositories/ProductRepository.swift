@@ -12,10 +12,12 @@ import SwiftData
 @MainActor
 final class ProductRepository: ProductRepositoryProtocol {
     private let modelContext: ModelContext
+    private let upsertActor: ProductUpsertActor
     private let apiClient: ApiClientProtocol = ApiClient()
 
-    init(modelContext: ModelContext) {
-        self.modelContext = modelContext
+    init(modelContainer: ModelContainer) {
+        self.modelContext = modelContainer.mainContext
+        self.upsertActor = ProductUpsertActor(modelContainer: modelContainer)
     }
 
     func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) {
@@ -24,13 +26,13 @@ final class ProductRepository: ProductRepositoryProtocol {
                 endpoint: DummyJsonEndpointProvider.getProducts(pagination: .init(limit: limit, skip: skip)),
                 responseModel: ProductsDTO.self
             )
-            let batch = response.asProducts()
-            let pageProducts = try upsert(batch, returnAll: false)
-            return (pageProducts, response.total)
+            let snapshots = response.asSnapshots()
+            try await upsertActor.upsert(snapshots)
+            let products = try fetchByProductIds(snapshots.map(\.productId))
+            return (products, response.total)
         } catch {
             let mocks = Product.mockProducts
-            let page = Array(mocks.dropFirst(skip).prefix(limit))
-            return (page, mocks.count)
+            return (Array(mocks.dropFirst(skip).prefix(limit)), mocks.count)
         }
     }
 
@@ -40,45 +42,11 @@ final class ProductRepository: ProductRepositoryProtocol {
                 endpoint: DummyJsonEndpointProvider.getProducts(pagination: .init(limit: 0, skip: nil)),
                 responseModel: ProductsDTO.self
             )
-            return try upsert(response.asProducts())
+            try await upsertActor.upsert(response.asSnapshots())
+            return try modelContext.fetch(FetchDescriptor<Product>())
         } catch {
             return Product.mockProducts
         }
-    }
-
-    @discardableResult
-    private func upsert(_ products: [Product], returnAll: Bool = true) throws -> [Product] {
-        let productIds = products.map(\.productId)
-        let existingMap = try modelContext
-            .fetch(FetchDescriptor<Product>(predicate: #Predicate { productIds.contains($0.productId) }))
-            .reduce(into: [String: Product]()) { $0[$1.productId] = $1 }
-
-        var batchResult: [Product] = []
-        for product in products {
-            if let existing = existingMap[product.productId] {
-                existing.title = product.title
-                existing.brand = product.brand
-                existing.productDescription = product.productDescription
-                existing.category = product.category
-                existing.price = product.price
-                existing.discountPercentage = product.discountPercentage
-                existing.rating = product.rating
-                existing.stock = product.stock
-                existing.tags = product.tags
-                existing.thumbnail = product.thumbnail
-                existing.images = product.images
-                batchResult.append(existing)
-            } else {
-                modelContext.insert(product)
-                batchResult.append(product)
-            }
-        }
-        try modelContext.save()
-
-        if returnAll {
-            return try modelContext.fetch(FetchDescriptor<Product>())
-        }
-        return batchResult
     }
 
     func fetch(category: ProductCategory?) async throws -> [Product] {
@@ -88,12 +56,18 @@ final class ProductRepository: ProductRepositoryProtocol {
         )
         return try modelContext.fetch(descriptor)
     }
+
+    private func fetchByProductIds(_ productIds: [String]) throws -> [Product] {
+        try modelContext.fetch(
+            FetchDescriptor<Product>(predicate: #Predicate { productIds.contains($0.productId) })
+        )
+    }
 }
 
 extension ProductsDTO {
-    func asProducts() -> [Product] {
+    func asSnapshots() -> [ProductSnapshot] {
         products.map { dto in
-            Product(
+            ProductSnapshot(
                 productId: dto.sku,
                 title: dto.title,
                 brand: dto.brand ?? "Generic",

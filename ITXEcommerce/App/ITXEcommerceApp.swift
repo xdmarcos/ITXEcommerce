@@ -19,7 +19,7 @@ struct ITXEcommerceApp: App {
             let container = try ModelContainer(for: Product.self, CartItem.self)
             self.container = container
             self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
-            self.productRepository = ProductRepository(modelContext: container.mainContext)
+            self.productRepository = ProductRepository(modelContainer: container)
         } catch {
             fatalError("ModelContainer init failed: \(error)")
         }
