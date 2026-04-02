@@ -34,37 +34,38 @@ The composition root (`ITXEcommerceApp`) is the only place concrete types are as
 
 ```
 ITXEcommerce/
-├── App/                            # Entry point, DI wiring, build configuration
-│   └── Configuration/              # EnvironmentManager (staging / production)
-├── Model/                          # SwiftData @Model classes + network DTOs
-│   ├── Product.swift               # @Model, #Unique constraint on productId
-│   ├── CartItem.swift              # @Model, optional Product relationship
-│   ├── ProductsDTO.swift           # Network response shapes (Codable)
+├── App/                                    # Entry point, DI wiring, build configuration
+│   ├── Configuration/                      # EnvironmentManager (staging / production)
+│   └── ITXEcommerceMigrationPlan.swift     # SwiftData, #Migration plan for ModelContainer
+├── Model/                                  # SwiftData @Model classes + network DTOs
+│   ├── Product.swift                       # @Model, #Unique constraint on productId
+│   ├── CartItem.swift                      # @Model, optional Product relationship
+│   ├── ProductsDTO.swift                   # Network response shapes (Codable)
 │   └── ProductSortOption.swift
-├── Repositories/                   # Protocol-backed data layer
-│   ├── ProductRepositoryProtocol   # fetch variants
-│   ├── CartRepositoryProtocol      # CRUD + clear
-│   ├── CacheManageable             # Narrow ISP protocol: clearCache() only
-│   ├── ProductRepository           # SwiftData + background upsert
-│   ├── CartRepository              # SwiftData main-context CRUD
-│   ├── ProductUpsertActor          # @ModelActor for background writes
-│   ├── RemoteDataSourceProtocol    # Network boundary
-│   ├── ClearAllDataService         # SRP composition: product + cart clear
-│   ├── NullProductRepository       # Null Object — env key default
-│   ├── NullCartRepository          # Null Object — env key default
-│   └── NullCacheManageable         # Null Object — env key default
-├── Services/                       # Concrete remote data source + endpoints
+├── Repositories/                           # Protocol-backed data layer
+│   ├── ProductRepositoryProtocol           # fetch variants
+│   ├── CartRepositoryProtocol              # CRUD + clear
+│   ├── CacheManageable                     # Narrow ISP protocol: clearCache() only
+│   ├── ProductRepository                   # SwiftData + background upsert
+│   ├── CartRepository                      # SwiftData main-context CRUD
+│   ├── ProductUpsertActor                  # @ModelActor for background writes
+│   ├── RemoteDataSourceProtocol            # Network boundary
+│   ├── ClearAllDataService                 # SRP composition: product + cart clear
+│   ├── NullProductRepository               # Null Object — env key default
+│   ├── NullCartRepository                  # Null Object — env key default
+│   └── NullCacheManageable                 # Null Object — env key default
+├── Services/                               # Concrete remote data source + endpoints
 │   ├── DummyJsonRemoteDataSource
-│   └── ServiceProvider             # DummyJsonEndpointProvider
+│   └── ServiceProvider                     # DummyJsonEndpointProvider
 ├── Scenes/
-│   ├── Root/                       # Tab navigation + launch screen
-│   ├── Catalog/                    # Product grid, pagination, sort, search
-│   ├── ProductDetail/              # Gallery, info, metadata, add-to-cart
-│   ├── Cart/                       # Cart list, quantity controls, checkout
-│   ├── Settings/                   # Theme, language, cache management
-│   ├── QuickStart/                 # In-app README renderer
-│   └── Common/                     # Shared components + extensions
-└── Tools/                          # View extensions (errorAlert)
+│   ├── Root/                               # Tab navigation + launch screen
+│   ├── Catalog/                            # Product grid, pagination, sort, search
+│   ├── ProductDetail/                      # Gallery, info, metadata, add-to-cart
+│   ├── Cart/                               # Cart list, quantity controls, checkout
+│   ├── Settings/                           # Theme, language, cache management
+│   ├── QuickStart/                         # In-app README renderer
+│   └── Common/                             # Shared components + extensions
+└── Tools/                                  # View extensions (errorAlert)
 
 ITXEcommerceTests/
 ├── Mocks/
