@@ -36,7 +36,7 @@ struct SettingsViewModelTests {
 
     @Test func clearCacheErrorIsNilInitially() {
         let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
-        #expect(vm.clearCacheError == nil)
+        #expect(vm.settingsError == nil)
     }
 
     // MARK: UserDefaults persistence
@@ -102,7 +102,7 @@ struct SettingsViewModelTests {
     @Test func clearCacheKeepsErrorNilOnSuccess() async {
         let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         await vm.clearCache().value
-        #expect(vm.clearCacheError == nil)
+        #expect(vm.settingsError == nil)
     }
 
     // MARK: Clear cache — failure
@@ -110,7 +110,7 @@ struct SettingsViewModelTests {
     @Test func clearCacheSetsErrorOnFailure() async {
         let vm = SettingsViewModel(repository: FailingClearCacheRepository(), defaults: makeDefaults())
         await vm.clearCache().value
-        #expect(vm.clearCacheError != nil)
+        #expect(vm.settingsError != nil)
     }
 
     @Test func clearCacheDoesNotSetCacheClearedOnFailure() async {
@@ -132,7 +132,7 @@ struct SettingsViewModelTests {
         let vm = SettingsViewModel(repository: FailingClearCacheRepository(), defaults: makeDefaults())
         await vm.clearCache().value
         vm.clearCacheErrorDismissed()
-        #expect(vm.clearCacheError == nil)
+        #expect(vm.settingsError == nil)
     }
 }
 

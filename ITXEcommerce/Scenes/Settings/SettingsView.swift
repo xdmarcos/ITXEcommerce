@@ -60,14 +60,7 @@ struct SettingsView: View {
             } message: {
                 Text("The product cache has been cleared successfully.")
             }
-            .alert("Error", isPresented: Binding(
-                get: { bindableViewModel.clearCacheError != nil },
-                set: { if !$0 { bindableViewModel.clearCacheErrorDismissed() } }
-            ), presenting: bindableViewModel.clearCacheError) { _ in
-                Button("OK", role: .cancel) { bindableViewModel.clearCacheErrorDismissed() }
-            } message: { error in
-                Text(error.localizedDescription)
-            }
+            .errorAlert(error: $bindableViewModel.settingsError)
         }
     }
 }

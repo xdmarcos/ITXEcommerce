@@ -7,51 +7,36 @@
 
 import SwiftUI
 
-enum AppColorScheme: String, CaseIterable {
-    case light, dark, system
-
-    var title: String {
-        switch self {
-        case .light: "Light"
-        case .dark: "Dark"
-        case .system: "Auto"
-        }
-    }
-
-    var colorScheme: ColorScheme? {
-        switch self {
-        case .light: .light
-        case .dark: .dark
-        case .system: nil
-        }
-    }
-}
-
-enum AppLanguage: String, CaseIterable {
-    case english = "en"
-    case galician = "gl"
-    case spanish = "es"
-
-    var title: String {
-        switch self {
-        case .english: "English"
-        case .galician: "Galician"
-        case .spanish: "Spanish"
-        }
-    }
-
-    var locale: Locale { Locale(identifier: rawValue) }
-}
-
 @Observable
 final class SettingsViewModel {
     private enum Keys {
         static let colorScheme = "appColorScheme"
         static let language = "appLanguage"
     }
-
     private let repository: any ProductRepositoryProtocol
     private let defaults: UserDefaults
+    private(set) var cacheCleared = false
+
+    enum SettingsError: LocalizedError {
+        case unknown(Error? = nil)
+        case clearCache(Error? = nil)
+
+        var errorDescription: String? {
+            switch self {
+            case .unknown: return "Unknown Error"
+            case .clearCache: return "Failed to clear cache"
+            }
+        }
+
+        var recoverySuggestion: String? {
+            switch self {
+            case .unknown(let error): return error?.localizedDescription
+            case .clearCache: return "An unexpected error occurred. Please try again later."
+            }
+        }
+    }
+
+    var settingsError: Error?
 
     var colorScheme: AppColorScheme {
         didSet { defaults.set(colorScheme.rawValue, forKey: Keys.colorScheme) }
@@ -60,8 +45,6 @@ final class SettingsViewModel {
         didSet { defaults.set(language.rawValue, forKey: Keys.language) }
     }
     var showClearCacheConfirmation = false
-    private(set) var cacheCleared = false
-    private(set) var clearCacheError: Error?
 
     init(repository: any ProductRepositoryProtocol, defaults: UserDefaults = .standard) {
         self.repository = repository
@@ -83,17 +66,17 @@ final class SettingsViewModel {
     }
 
     func clearCacheErrorDismissed() {
-        clearCacheError = nil
+        settingsError = nil
     }
 
     @discardableResult
     func clearCache() -> Task<Void, Never> {
         Task { @MainActor in
             do {
-                try self.repository.clearCache()
-                self.cacheCleared = true
+                try repository.clearCache()
+                cacheCleared = true
             } catch {
-                self.clearCacheError = error
+                settingsError = SettingsError.clearCache(error)
             }
         }
     }
