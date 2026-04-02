@@ -21,16 +21,16 @@ final class SettingsViewModel {
         case unknown(Error? = nil)
         case clearCache(Error? = nil)
 
-        var errorDescription: String? {
+        var errorDescription: LocalizedStringResource? {
             switch self {
             case .unknown: return "Unknown Error"
             case .clearCache: return "Failed to clear cache"
             }
         }
 
-        var recoverySuggestion: String? {
+        var recoverySuggestion: LocalizedStringResource? {
             switch self {
-            case .unknown(let error): return error?.localizedDescription
+            case .unknown(let error): return LocalizedStringResource(stringLiteral: error?.localizedDescription ?? "")
             case .clearCache: return "An unexpected error occurred. Please try again later."
             }
         }
@@ -65,7 +65,7 @@ final class SettingsViewModel {
         cacheCleared = false
     }
 
-    func clearCacheErrorDismissed() {
+    func clearCacheError() {
         settingsError = nil
     }
 
@@ -75,6 +75,7 @@ final class SettingsViewModel {
             do {
                 try repository.clearCache()
                 cacheCleared = true
+                clearCacheError()
             } catch {
                 settingsError = SettingsError.clearCache(error)
             }

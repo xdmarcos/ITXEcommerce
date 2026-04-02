@@ -10,9 +10,13 @@ import Foundation
 @Observable
 final class CatalogViewModel {
     private let repository: any ProductRepositoryProtocol
+    private static let pageSize = 20
+    private var currentSkip = 0
+
     private(set) var products: [Product] = []
-    private(set) var loadError: Error?
     private(set) var loadTask: Task<Void, Never>?
+    private(set) var isLoadingMore = false
+    private(set) var hasMore = true
 
     let allCategories = ProductCategory.allCases
     let allSortOption = ProductSortOption.allCases
@@ -21,13 +25,27 @@ final class CatalogViewModel {
     var selectedCategory: ProductCategory?
     var selectedSort: ProductSortOption?
     var selectedProduct: Product?
-    var showErrorAlert = false
     var firstLoadCompleted = false
-    private(set) var isLoadingMore = false
-    private(set) var hasMore = true
+    var catalogError: Error?
 
-    private static let pageSize = 20
-    private var currentSkip = 0
+    enum CatalogError: LocalizedError {
+        case unknown(Error? = nil)
+        case loadError(Error? = nil)
+
+        var errorDescription: LocalizedStringResource? {
+            switch self {
+            case .unknown: return "Unknown Error"
+            case .loadError: return "Failed to load products"
+            }
+        }
+
+        var recoverySuggestion: LocalizedStringResource? {
+            switch self {
+            case .unknown(let error): return LocalizedStringResource(stringLiteral: error?.localizedDescription ?? "")
+            case .loadError: return "An unexpected error occurred. Please try again later."
+            }
+        }
+    }
 
     init(repository: any ProductRepositoryProtocol) {
         self.repository = repository
@@ -55,16 +73,15 @@ final class CatalogViewModel {
     func onFirstAppear() -> Task<Void, Never> {
         if let loadTask { return loadTask }
         let task = Task {
-            defer { firstLoadCompleted = true }
             await self.fetchProducts()
+            firstLoadCompleted = true
         }
         loadTask = task
         return task
     }
 
     func clearLoadError() {
-        loadError = nil
-        showErrorAlert = false
+        catalogError = nil
     }
 
     func columnsSelectorButtonOnTap() {
@@ -101,8 +118,7 @@ final class CatalogViewModel {
             hasMore = currentSkip < total
             clearLoadError()
         } catch {
-            loadError = error
-            showErrorAlert = true
+            catalogError = CatalogError.loadError(error)
         }
     }
 }

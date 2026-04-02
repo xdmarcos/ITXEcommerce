@@ -1,11 +1,12 @@
 //
 //  MockProductRepository.swift
-//  ITXEcommerce
+//  ITXEcommerceTests
 //
 //  Created by xdmGzDev on 30/3/26.
 //
 
 import Foundation
+@testable import ITXEcommerce
 
 final class MockProductRepository: ProductRepositoryProtocol {
     private let products: [Product]

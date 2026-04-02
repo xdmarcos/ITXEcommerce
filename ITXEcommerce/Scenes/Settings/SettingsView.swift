@@ -38,7 +38,7 @@ struct SettingsView: View {
 
                 Section("Data") {
                     Button("Clear Cache", role: .destructive) {
-                        bindableViewModel.clearCacheButtonOnTap()
+                        viewModel.clearCacheButtonOnTap()
                     }
                 }
             }
@@ -48,24 +48,29 @@ struct SettingsView: View {
                 isPresented: $bindableViewModel.showClearCacheConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Clear", role: .destructive) { bindableViewModel.clearCache() }
+                Button("Clear", role: .destructive) { viewModel.clearCache() }
             } message: {
                 Text("This will remove all locally cached product data. It will be re-downloaded on next use.")
             }
             .alert("Cache Cleared", isPresented: Binding(
-                get: { bindableViewModel.cacheCleared },
-                set: { if !$0 { bindableViewModel.cacheClearedDismissed() } }
+                get: { viewModel.cacheCleared },
+                set: { if !$0 { viewModel.cacheClearedDismissed() } }
             )) {
-                Button("OK") { bindableViewModel.cacheClearedDismissed() }
+                Button("OK") { viewModel.cacheClearedDismissed() }
             } message: {
                 Text("The product cache has been cleared successfully.")
             }
-            .errorAlert(error: $bindableViewModel.settingsError)
+            .errorAlert(
+                error: Binding(
+                    get: { viewModel.settingsError },
+                    set: { if $0 != nil { viewModel.clearCacheError() } }
+                )
+            )
         }
     }
 }
 
 #Preview {
     SettingsView()
-        .environment(SettingsViewModel(repository: MockProductRepository()))
+        .environment(SettingsViewModel(repository: NullProductRepository()))
 }

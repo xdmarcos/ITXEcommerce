@@ -18,6 +18,7 @@ struct CatalogView: View {
     var body: some View {
         NavigationSplitView {
             CatalogGridView(viewModel: viewModel)
+                .redacted(reason: viewModel.firstLoadCompleted ? .invalidated : .placeholder)
                 .navigationSplitViewColumnWidth(min: 320, ideal: 420)
                 .task {
                     viewModel.onFirstAppear()
@@ -70,12 +71,15 @@ struct CatalogView: View {
                 }
                 .alert(
                     "Failed to load products",
-                    isPresented: $viewModel.showErrorAlert,
+                    isPresented: Binding(
+                        get: { viewModel.catalogError != nil },
+                        set: { if !$0 { viewModel.clearLoadError() } }
+                    ),
                     actions: {
                         Button("Retry") { viewModel.reload() }
                         Button("OK", role: .cancel) { viewModel.clearLoadError() }
                     }, message: {
-                        Text(viewModel.loadError?.localizedDescription ?? "")
+                        Text(viewModel.catalogError?.localizedDescription ?? "")
                     }
                 )
         } detail: {
@@ -101,6 +105,6 @@ private extension CatalogView {
 // MARK: - Previews
 
 #Preview("Catalog") {
-    CatalogView(repository: MockProductRepository(products: Product.mockProducts))
-        .environment(CartViewModel(repository: MockCartRepository()))
+    CatalogView(repository: NullProductRepository())
+        .environment(CartViewModel(repository: NullCartRepository()))
 }

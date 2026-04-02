@@ -281,7 +281,7 @@ struct CartViewModelTests {
 
         await vm.checkout().value
 
-        #expect(vm.lastError != nil)
+        #expect(vm.cartError != nil)
         #expect(vm.checkoutCompleted == false)
     }
 
@@ -290,16 +290,16 @@ struct CartViewModelTests {
     @Test func fetchItemsFailureSetsLastError() async {
         let vm = CartViewModel(repository: FailingCartRepository())
         await vm.loadTask?.value
-        #expect(vm.lastError != nil)
+        #expect(vm.cartError != nil)
     }
 
     @Test func clearLastErrorNilsError() async {
         let vm = CartViewModel(repository: FailingCartRepository())
         await vm.loadTask?.value
 
-        vm.clearLastError()
+        vm.clearCartError()
 
-        #expect(vm.lastError == nil)
+        #expect(vm.cartError == nil)
     }
 
     @Test func addFailureSetsLastError() async {
@@ -308,7 +308,7 @@ struct CartViewModelTests {
 
         await vm.add(product: product).value
 
-        #expect(vm.lastError != nil)
+        #expect(vm.cartError != nil)
     }
 
     @Test func increaseQuantityFailureSetsLastError() async {
@@ -317,7 +317,7 @@ struct CartViewModelTests {
 
         await vm.increaseQuantity(item).value
 
-        #expect(vm.lastError != nil)
+        #expect(vm.cartError != nil)
     }
 
     @Test func decreaseQuantityFailureSetsLastError() async {
@@ -326,7 +326,7 @@ struct CartViewModelTests {
 
         await vm.decreaseQuantity(item).value
 
-        #expect(vm.lastError != nil)
+        #expect(vm.cartError != nil)
     }
 
     @Test func removeFailureSetsLastError() async {
@@ -335,7 +335,7 @@ struct CartViewModelTests {
 
         await vm.remove(item).value
 
-        #expect(vm.lastError != nil)
+        #expect(vm.cartError != nil)
     }
 }
 

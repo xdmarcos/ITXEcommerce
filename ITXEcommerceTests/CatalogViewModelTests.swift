@@ -44,8 +44,7 @@ struct CatalogViewModelTests {
 
         await vm.onFirstAppear().value
 
-        #expect(vm.loadError != nil)
-        #expect(vm.showErrorAlert == true)
+        #expect(vm.catalogError != nil)
     }
 
     @Test func clearLoadErrorResetsErrorState() async {
@@ -54,16 +53,14 @@ struct CatalogViewModelTests {
 
         vm.clearLoadError()
 
-        #expect(vm.loadError == nil)
-        #expect(vm.showErrorAlert == false)
+        #expect(vm.catalogError == nil)
     }
 
     @Test func successfulFetchClearsErrorState() async {
         let vm = CatalogViewModel(repository: MockProductRepository(products: [makeProduct()]))
         await vm.onFirstAppear().value
 
-        #expect(vm.loadError == nil)
-        #expect(vm.showErrorAlert == false)
+        #expect(vm.catalogError == nil)
     }
 
     // MARK: Category filtering

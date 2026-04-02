@@ -131,7 +131,7 @@ struct SettingsViewModelTests {
     @Test func clearCacheErrorDismissedResetsError() async {
         let vm = SettingsViewModel(repository: FailingClearCacheRepository(), defaults: makeDefaults())
         await vm.clearCache().value
-        vm.clearCacheErrorDismissed()
+        vm.clearCacheError()
         #expect(vm.settingsError == nil)
     }
 }

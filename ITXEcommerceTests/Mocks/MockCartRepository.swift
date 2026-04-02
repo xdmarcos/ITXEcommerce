@@ -1,11 +1,12 @@
 //
 //  MockCartRepository.swift
-//  ITXEcommerce
+//  ITXEcommerceTests
 //
 //  Created by xdmGzDev on 30/3/26.
 //
 
 import Foundation
+@testable import ITXEcommerce
 
 final class MockCartRepository: CartRepositoryProtocol {
     private(set) var storedItems: [CartItem] = []

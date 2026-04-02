@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct ProductDetailView: View {
-    @State private var viewModel: ProductDetailViewModel
-    @State private var justAdded = false
     @Environment(CartViewModel.self) private var cartViewModel
+    @State private var viewModel: ProductDetailViewModel
 
     init(product: Product) {
         _viewModel = State(wrappedValue: ProductDetailViewModel(product: product))
@@ -63,5 +62,5 @@ struct ProductDetailView: View {
     NavigationStack {
         ProductDetailView(product: Product.mockProducts[0])
     }
-    .environment(CartViewModel(repository: MockCartRepository()))
+    .environment(CartViewModel(repository: NullCartRepository()))
 }

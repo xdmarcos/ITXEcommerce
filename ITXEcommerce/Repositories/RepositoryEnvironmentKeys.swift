@@ -8,5 +8,5 @@
 import SwiftUI
 
 extension EnvironmentValues {
-    @Entry var productRepository: any ProductRepositoryProtocol = MockProductRepository()
+    @Entry var productRepository: any ProductRepositoryProtocol = NullProductRepository()
 }

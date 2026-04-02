@@ -11,17 +11,73 @@ import Foundation
 final class CartViewModel {
     private let repository: any CartRepositoryProtocol
     private(set) var items: [CartItem] = []
-    private(set) var lastError: Error?
     private(set) var loadTask: Task<Void, Never>?
     private(set) var checkoutCompleted = false
     let currency = "EUR"
     var firstLoadCompleted = false
     var showCartDetail = false
 
+    var cartError: Error?
+
+    @MainActor
+    enum CartError: LocalizedError {
+        case unknown(Error? = nil)
+        case increaseQuantity(Error? = nil)
+        case decreaseQuantity(Error? = nil)
+        case add(Error? = nil)
+        case remove(Error? = nil)
+        case checkout(Error? = nil)
+        case reload(Error? = nil)
+
+        var errorDescription: LocalizedStringResource? {
+            switch self {
+            case .unknown: return "Unknown Error"
+            case .increaseQuantity: return "Failed to increment"
+            case .decreaseQuantity: return "Failed to decrement"
+            case .add: return "Failed to add products"
+            case .remove: return "Failed to remove products"
+            case .checkout: return "Failed to Checkout products"
+            case .reload: return "Failed to reload products"
+            }
+        }
+
+        var recoverySuggestion: LocalizedStringResource? {
+
+            switch self {
+            case .unknown(let error):
+                return LocalizedStringResource(stringLiteral: error?.localizedDescription ?? "")
+
+            case .increaseQuantity(let error):
+                let debugError = EnvironmentManager.shared.isStaging ? "\(error?.localizedDescription ?? "")" : ""
+                return LocalizedStringResource(stringLiteral: "An unexpected error occurred. Please try again. \(debugError)")
+
+            case .decreaseQuantity(let error):
+                let debugError = EnvironmentManager.shared.isStaging ? "\(error?.localizedDescription ?? "")" : ""
+                return LocalizedStringResource(stringLiteral: "An unexpected error occurred. Please try again. \(debugError)")
+
+            case .add(let error):
+                let debugError = EnvironmentManager.shared.isStaging ? "\(error?.localizedDescription ?? "")" : ""
+                return LocalizedStringResource(stringLiteral: "A 'Add item' error occurred. \(debugError)")
+
+            case .remove(let error):
+                let debugError = EnvironmentManager.shared.isStaging ? "\(error?.localizedDescription ?? "")" : ""
+                return LocalizedStringResource(stringLiteral: "A 'Remove item' error occurred. \(debugError)")
+
+            case .checkout(let error):
+                let debugError = EnvironmentManager.shared.isStaging ? "\(error?.localizedDescription ?? "")" : ""
+                return LocalizedStringResource(stringLiteral: "A 'Checkout' error occurred. \(debugError)")
+
+            case .reload(let error):
+                let debugError = EnvironmentManager.shared.isStaging ? "\(error?.localizedDescription ?? "")" : ""
+                return LocalizedStringResource(stringLiteral: "A 'Reload item' error occurred. \(debugError)")
+            }
+        }
+    }
+
     init(repository: any CartRepositoryProtocol) {
         self.repository = repository
         // to load carItems on app launch
-        loadTask = Task { @MainActor in self.reload() }
+        loadTask = Task { @MainActor in reload() }
     }
 
     var itemCount: Int {
@@ -52,8 +108,8 @@ final class CartViewModel {
     func onFirstAppear() -> Task<Void, Never> {
         if let loadTask { return loadTask }
         let task = Task { @MainActor in
-            defer { self.firstLoadCompleted = true }
-            self.reload()
+            defer { firstLoadCompleted = true }
+            reload()
         }
         loadTask = task
         return task
@@ -62,12 +118,12 @@ final class CartViewModel {
     @discardableResult
     func add(product: Product) -> Task<Void, Never> {
         Task { @MainActor in
-            guard self.canAdd(product) else { return }
+            guard canAdd(product) else { return }
             do {
-                try self.repository.add(product: product)
-                self.reload()
+                try repository.add(product: product)
+                reload()
             } catch {
-                self.lastError = error
+                cartError = CartError.add(error)
             }
         }
     }
@@ -75,12 +131,12 @@ final class CartViewModel {
     @discardableResult
     func increaseQuantity(_ item: CartItem) -> Task<Void, Never> {
         Task { @MainActor in
-            guard self.canIncrease(item) else { return }
+            guard canIncrease(item) else { return }
             do {
-                try self.repository.updateQuantity(item, to: item.quantity + 1)
-                self.reload()
+                try repository.updateQuantity(item, to: item.quantity + 1)
+                reload()
             } catch {
-                self.lastError = error
+                cartError = CartError.increaseQuantity(error)
             }
         }
     }
@@ -90,13 +146,13 @@ final class CartViewModel {
         Task { @MainActor in
             do {
                 if item.quantity > 1 {
-                    try self.repository.updateQuantity(item, to: item.quantity - 1)
+                    try repository.updateQuantity(item, to: item.quantity - 1)
                 } else {
-                    try self.repository.remove(item)
+                    try repository.remove(item)
                 }
-                self.reload()
+                reload()
             } catch {
-                self.lastError = error
+                cartError = CartError.decreaseQuantity(error)
             }
         }
     }
@@ -105,10 +161,10 @@ final class CartViewModel {
     func remove(_ item: CartItem) -> Task<Void, Never> {
         Task { @MainActor in
             do {
-                try self.repository.remove(item)
-                self.reload()
+                try repository.remove(item)
+                reload()
             } catch {
-                self.lastError = error
+                cartError = CartError.remove(error)
             }
         }
     }
@@ -118,13 +174,13 @@ final class CartViewModel {
         let itemsToDelete = indexSet.map { items[$0] }
         return Task { @MainActor in
             for item in itemsToDelete {
-                await self.remove(item).value
+                await remove(item).value
             }
         }
     }
 
-    func clearLastError() {
-        lastError = nil
+    func clearCartError() {
+        cartError = nil
     }
 
     func clearCheckoutCompleted() {
@@ -135,11 +191,11 @@ final class CartViewModel {
     func checkout() -> Task<Void, Never> {
         Task { @MainActor in
             do {
-                try self.repository.clear()
-                self.reload()
-                self.checkoutCompleted = true
+                try repository.clear()
+                reload()
+                checkoutCompleted = true
             } catch {
-                self.lastError = error
+                cartError = CartError.checkout(error)
             }
         }
     }
@@ -148,7 +204,7 @@ final class CartViewModel {
         do {
             items = try repository.fetchItems()
         } catch {
-            lastError = error
+            cartError = CartError.reload(error)
         }
     }
 }
