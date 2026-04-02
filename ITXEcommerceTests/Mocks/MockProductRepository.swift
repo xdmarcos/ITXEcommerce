@@ -8,6 +8,7 @@
 import Foundation
 @testable import ITXEcommerce
 
+@MainActor
 final class MockProductRepository: ProductRepositoryProtocol {
     private let products: [Product]
 

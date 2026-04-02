@@ -16,6 +16,10 @@ struct CatalogGridView: View {
 
     var body: some View {
         if viewModel.filteredProducts.isEmpty,
+           !viewModel.searchText.isEmpty,
+           viewModel.firstLoadCompleted {
+            ContentUnavailableView.search(text: viewModel.searchText)
+        } else if viewModel.filteredProducts.isEmpty,
            let category = viewModel.selectedCategory,
            viewModel.firstLoadCompleted {
             ContentUnavailableView(

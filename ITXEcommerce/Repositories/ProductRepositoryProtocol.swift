@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol ProductRepositoryProtocol {
+protocol ProductRepositoryProtocol: Sendable {
     func fetchAll() async throws -> [Product]
     func fetch(category: ProductCategory?) async throws -> [Product]
     func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int)
