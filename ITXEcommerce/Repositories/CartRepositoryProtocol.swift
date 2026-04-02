@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol CartRepositoryProtocol {
+protocol CartRepositoryProtocol: Sendable {
     func fetchItems() throws -> [CartItem]
     func add(product: Product) throws
     func updateQuantity(_ item: CartItem, to quantity: Int) throws

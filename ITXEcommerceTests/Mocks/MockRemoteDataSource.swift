@@ -10,6 +10,7 @@ import Foundation
 
 struct RemoteStubError: Error, Equatable {}
 
+@MainActor
 final class MockRemoteDataSource: RemoteDataSourceProtocol {
     var pageResult: Result<ProductsDTO, Error>
     var allResult: Result<ProductsDTO, Error>

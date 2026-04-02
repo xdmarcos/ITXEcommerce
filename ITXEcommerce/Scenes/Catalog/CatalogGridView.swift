@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CatalogGridView: View {
-    @Bindable var viewModel: CatalogViewModel
+    var viewModel: CatalogViewModel
 
     private var gridColumns: [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: 12), count: viewModel.columnCount)
@@ -16,6 +16,10 @@ struct CatalogGridView: View {
 
     var body: some View {
         if viewModel.filteredProducts.isEmpty,
+           !viewModel.searchText.isEmpty,
+           viewModel.firstLoadCompleted {
+            ContentUnavailableView.search(text: viewModel.searchText)
+        } else if viewModel.filteredProducts.isEmpty,
            let category = viewModel.selectedCategory,
            viewModel.firstLoadCompleted {
             ContentUnavailableView(

@@ -16,6 +16,7 @@ struct CatalogView: View {
     }
 
     var body: some View {
+        @Bindable var bindableCart = cartViewModel
         NavigationSplitView {
             CatalogGridView(viewModel: viewModel)
                 .redacted(reason: viewModel.firstLoadCompleted ? .invalidated : .placeholder)
@@ -64,7 +65,7 @@ struct CatalogView: View {
                         }
                     }
                 }
-                .sheet(isPresented: cartDetailBinding) {
+                .sheet(isPresented: $bindableCart.showCartDetail) {
                     CartView()
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
@@ -90,15 +91,6 @@ struct CatalogView: View {
             )
         }
         .navigationSplitViewStyle(.balanced)
-    }
-}
-
-private extension CatalogView {
-    var cartDetailBinding: Binding<Bool> {
-        Binding(
-            get: { cartViewModel.showCartDetail },
-            set: { cartViewModel.showCartDetail = $0 }
-        )
     }
 }
 

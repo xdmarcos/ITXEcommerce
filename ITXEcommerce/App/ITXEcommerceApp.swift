@@ -20,7 +20,10 @@ struct ITXEcommerceApp: App {
         CachedAsyncImageConfiguration.setMemoryCostLimit(50 * 1024 * 1024)
 
         do {
-            let container = try ModelContainer(for: Product.self, CartItem.self)
+            let container = try ModelContainer(
+                for: Product.self, CartItem.self,
+                migrationPlan: ITXEcommerceMigrationPlan.self
+            )
             self.container = container
             let productRepository = ProductRepository(
                 modelContainer: container,

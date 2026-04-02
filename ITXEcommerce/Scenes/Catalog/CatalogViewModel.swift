@@ -59,7 +59,7 @@ final class CatalogViewModel {
         let byCategory = selectedCategory.map { cat in products.filter { $0.category == cat } } ?? products
         let filtered = searchText.isEmpty
             ? byCategory
-            : byCategory.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            : byCategory.filter { $0.title.localizedStandardContains(searchText) }
         switch selectedSort {
         case .none: return filtered
         case .categoryAZ: return filtered.sorted { $0.category.displayName < $1.category.displayName }

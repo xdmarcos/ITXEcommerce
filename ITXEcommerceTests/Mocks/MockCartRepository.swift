@@ -8,6 +8,7 @@
 import Foundation
 @testable import ITXEcommerce
 
+@MainActor
 final class MockCartRepository: CartRepositoryProtocol {
     private(set) var storedItems: [CartItem] = []
 

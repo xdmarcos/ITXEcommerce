@@ -13,6 +13,7 @@ final class CartItem {
     var quantity: Int
     var addedAt: Date
 
+    @Relationship(deleteRule: .cascade)
     var product: Product?
 
     init(product: Product, quantity: Int = 1) {

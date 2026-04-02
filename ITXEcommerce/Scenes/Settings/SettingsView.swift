@@ -40,18 +40,18 @@ struct SettingsView: View {
                     Button("Clear Cache", role: .destructive) {
                         viewModel.clearCacheButtonOnTap()
                     }
+                    .confirmationDialog(
+                        "Clear Cache",
+                        isPresented: $bindableViewModel.showClearCacheConfirmation,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Clear", role: .destructive) { viewModel.clearCache() }
+                    } message: {
+                        Text("This will remove all locally cached product data. It will be re-downloaded on next use.")
+                    }
                 }
             }
             .navigationTitle("Settings")
-            .confirmationDialog(
-                "Clear Cache",
-                isPresented: $bindableViewModel.showClearCacheConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Clear", role: .destructive) { viewModel.clearCache() }
-            } message: {
-                Text("This will remove all locally cached product data. It will be re-downloaded on next use.")
-            }
             .alert("Cache Cleared", isPresented: Binding(
                 get: { viewModel.cacheCleared },
                 set: { if !$0 { viewModel.cacheClearedDismissed() } }

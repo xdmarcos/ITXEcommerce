@@ -122,6 +122,7 @@ final class CartViewModel {
             do {
                 try repository.add(product: product)
                 reload()
+                await presentCartIfRequired()
             } catch {
                 cartError = CartError.add(error)
             }
@@ -206,5 +207,11 @@ final class CartViewModel {
         } catch {
             cartError = CartError.reload(error)
         }
+    }
+
+    private func presentCartIfRequired() async {
+        guard !showCartDetail else { return }
+        try? await Task.sleep(for: .seconds(0.5))
+        cartButtonOnTap()
     }
 }
