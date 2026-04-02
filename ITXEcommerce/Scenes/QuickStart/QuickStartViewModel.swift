@@ -1,5 +1,5 @@
 //
-//  FavoritesViewModel.swift
+//  QuickStartViewModel.swift
 //  ITXEcommerce
 //
 //  Created by xdmGzDev on 30/3/26.
@@ -8,7 +8,7 @@
 import Foundation
 
 @Observable
-class QuickStartViewModel {
+final class QuickStartViewModel {
     var readmeContent: String {
         guard
             let url = Bundle.main.url(forResource: "README", withExtension: "md"),

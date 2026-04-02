@@ -18,11 +18,6 @@ struct CatalogViewModelTests {
         #expect(vm.columnCount == 2)
     }
 
-    @Test func initialShowCartDetailIsFalse() {
-        let vm = CatalogViewModel(repository: MockProductRepository())
-        #expect(vm.showCartDetail == false)
-    }
-
     @Test func initialSelectedCategoryIsNil() {
         let vm = CatalogViewModel(repository: MockProductRepository())
         #expect(vm.selectedCategory == nil)
@@ -49,8 +44,7 @@ struct CatalogViewModelTests {
 
         await vm.onFirstAppear().value
 
-        #expect(vm.loadError != nil)
-        #expect(vm.showErrorAlert == true)
+        #expect(vm.catalogError != nil)
     }
 
     @Test func clearLoadErrorResetsErrorState() async {
@@ -59,16 +53,14 @@ struct CatalogViewModelTests {
 
         vm.clearLoadError()
 
-        #expect(vm.loadError == nil)
-        #expect(vm.showErrorAlert == false)
+        #expect(vm.catalogError == nil)
     }
 
     @Test func successfulFetchClearsErrorState() async {
         let vm = CatalogViewModel(repository: MockProductRepository(products: [makeProduct()]))
         await vm.onFirstAppear().value
 
-        #expect(vm.loadError == nil)
-        #expect(vm.showErrorAlert == false)
+        #expect(vm.catalogError == nil)
     }
 
     // MARK: Category filtering
@@ -248,14 +240,6 @@ struct CatalogViewModelTests {
         #expect(vm.viewColumns == .three)
     }
 
-    // MARK: Cart button
-
-    @Test func cartButtonOnTapSetsShowCartDetail() {
-        let vm = CatalogViewModel(repository: MockProductRepository())
-        vm.cartButtonOnTap()
-        #expect(vm.showCartDetail == true)
-    }
-
     // MARK: Pagination
 
     @Test func initialHasMoreIsTrue() {
@@ -358,29 +342,157 @@ struct CatalogViewModelTests {
 
         #expect(vm.products.count == 20)
     }
+
+    // MARK: Search
+
+    @Test func initialSearchTextIsEmpty() {
+        let vm = CatalogViewModel(repository: MockProductRepository())
+        #expect(vm.searchText == "")
+    }
+
+    @Test func emptySearchTextReturnsAllProducts() async {
+        let products = [
+            makeProduct(id: "1", title: "iPhone"),
+            makeProduct(id: "2", title: "MacBook"),
+            makeProduct(id: "3", title: "iPad")
+        ]
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        vm.searchText = ""
+
+        #expect(vm.filteredProducts.count == 3)
+    }
+
+    @Test func searchFiltersProductsByTitle() async {
+        let products = [
+            makeProduct(id: "1", title: "iPhone 15"),
+            makeProduct(id: "2", title: "MacBook Pro"),
+            makeProduct(id: "3", title: "iPhone 14")
+        ]
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        vm.searchText = "iPhone"
+
+        let ids = vm.filteredProducts.map(\.productId)
+        #expect(ids == ["1", "3"])
+    }
+
+    @Test func searchIsCaseInsensitive() async {
+        let products = [
+            makeProduct(id: "1", title: "iPhone 15"),
+            makeProduct(id: "2", title: "MacBook Pro")
+        ]
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        vm.searchText = "iphone"
+
+        #expect(vm.filteredProducts.count == 1)
+        #expect(vm.filteredProducts.first?.productId == "1")
+    }
+
+    @Test func searchMatchesPartialTitle() async {
+        let products = [
+            makeProduct(id: "1", title: "Wireless Headphones"),
+            makeProduct(id: "2", title: "Wired Keyboard")
+        ]
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        vm.searchText = "wire"
+
+        #expect(vm.filteredProducts.count == 2)
+    }
+
+    @Test func searchWithNoMatchReturnsEmpty() async {
+        let products = [
+            makeProduct(id: "1", title: "iPhone"),
+            makeProduct(id: "2", title: "MacBook")
+        ]
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        vm.searchText = "Samsung"
+
+        #expect(vm.filteredProducts.isEmpty)
+    }
+
+    @Test func clearingSearchRestoresFullList() async {
+        let products = [
+            makeProduct(id: "1", title: "iPhone"),
+            makeProduct(id: "2", title: "MacBook")
+        ]
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        vm.searchText = "iPhone"
+        #expect(vm.filteredProducts.count == 1)
+
+        vm.searchText = ""
+        #expect(vm.filteredProducts.count == 2)
+    }
+
+    @Test func searchAndCategoryFilterApplyTogether() async {
+        let products = [
+            makeProduct(id: "1", title: "Beauty Serum", category: .beauty),
+            makeProduct(id: "2", title: "Beauty Cream", category: .beauty),
+            makeProduct(id: "3", title: "Laptop Pro", category: .laptops)
+        ]
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        vm.selectedCategory = .beauty
+        vm.searchText = "Serum"
+
+        let ids = vm.filteredProducts.map(\.productId)
+        #expect(ids == ["1"])
+    }
+
+    @Test func searchAndSortApplyTogether() async {
+        let products = [
+            makeProduct(id: "1", title: "iPhone 15", price: 999),
+            makeProduct(id: "2", title: "iPhone 14", price: 799),
+            makeProduct(id: "3", title: "MacBook Pro", price: 1299)
+        ]
+        let vm = CatalogViewModel(repository: MockProductRepository(products: products))
+        await vm.onFirstAppear().value
+
+        vm.searchText = "iPhone"
+        vm.selectedSort = .priceLowHigh
+
+        let ids = vm.filteredProducts.map(\.productId)
+        #expect(ids == ["2", "1"])
+    }
 }
 
 // MARK: - Helpers
 
-fileprivate func makeProduct(
-    id: String = UUID().uuidString,
-    category: ProductCategory = .beauty,
-    price: Decimal = 29.99
-) -> Product {
-    Product(
-        productId: id,
-        title: "Test Product",
-        brand: "Test Brand",
-        productDescription: "Test Description",
-        category: category,
-        price: price
-    )
-}
+private extension CatalogViewModelTests {
 
-fileprivate final class FailingProductRepository: ProductRepositoryProtocol {
-    struct FetchError: Error {}
-    func fetchAll() async throws -> [Product] { throw FetchError() }
-    func fetch(category: ProductCategory?) async throws -> [Product] { throw FetchError() }
-    func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { throw FetchError() }
-    func clearCache() throws { throw FetchError() }
+    func makeProduct(
+        id: String = UUID().uuidString,
+        title: String = "Test Product",
+        category: ProductCategory = .beauty,
+        price: Decimal = 29.99
+    ) -> Product {
+        Product(
+            productId: id,
+            sku: "SKU-1234",
+            title: title,
+            brand: "Test Brand",
+            productDescription: "Test Description",
+            category: category,
+            price: price
+        )
+    }
+
+    final class FailingProductRepository: ProductRepositoryProtocol {
+        struct FetchError: Error {}
+        func fetchAll() async throws -> [Product] { throw FetchError() }
+        func fetch(category: ProductCategory?) async throws -> [Product] { throw FetchError() }
+        func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { throw FetchError() }
+        func fetchProduct(id: String) async throws -> Product? { throw FetchError() }
+    }
 }

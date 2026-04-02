@@ -7,10 +7,9 @@
 
 import Foundation
 
-@MainActor
 protocol ProductRepositoryProtocol {
     func fetchAll() async throws -> [Product]
     func fetch(category: ProductCategory?) async throws -> [Product]
     func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int)
-    func clearCache() throws
+    func fetchProduct(id: String) async throws -> Product?
 }

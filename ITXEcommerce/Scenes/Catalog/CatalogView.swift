@@ -18,9 +18,12 @@ struct CatalogView: View {
     var body: some View {
         NavigationSplitView {
             CatalogGridView(viewModel: viewModel)
+                .redacted(reason: viewModel.firstLoadCompleted ? .invalidated : .placeholder)
+                .navigationSplitViewColumnWidth(min: 320, ideal: 420)
                 .task {
                     viewModel.onFirstAppear()
                 }
+                .searchable(text: $viewModel.searchText, prompt: "Search products")
                 .navigationTitle(viewModel.filteredProducts.isEmpty ? "Catalog" : "Catalog [\(viewModel.filteredProducts.count)]")
                 .navigationDestination(for: Product.self) { product in
                     ProductDetailView(product: product)
@@ -57,23 +60,26 @@ struct CatalogView: View {
                     }
                     ToolbarItemGroup(placement: .topBarTrailing) {
                         CartToolbarButton(itemCount: cartViewModel.itemCount) {
-                            viewModel.cartButtonOnTap()
+                            cartViewModel.cartButtonOnTap()
                         }
                     }
                 }
-                .sheet(isPresented: $viewModel.showCartDetail) {
+                .sheet(isPresented: cartDetailBinding) {
                     CartView()
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
                 }
                 .alert(
                     "Failed to load products",
-                    isPresented: $viewModel.showErrorAlert,
+                    isPresented: Binding(
+                        get: { viewModel.catalogError != nil },
+                        set: { if !$0 { viewModel.clearLoadError() } }
+                    ),
                     actions: {
                         Button("Retry") { viewModel.reload() }
                         Button("OK", role: .cancel) { viewModel.clearLoadError() }
                     }, message: {
-                        Text(viewModel.loadError?.localizedDescription ?? "")
+                        Text(viewModel.catalogError?.localizedDescription ?? "")
                     }
                 )
         } detail: {
@@ -83,12 +89,22 @@ struct CatalogView: View {
                 systemImage: "square.grid.3x3"
             )
         }
+        .navigationSplitViewStyle(.balanced)
+    }
+}
+
+private extension CatalogView {
+    var cartDetailBinding: Binding<Bool> {
+        Binding(
+            get: { cartViewModel.showCartDetail },
+            set: { cartViewModel.showCartDetail = $0 }
+        )
     }
 }
 
 // MARK: - Previews
 
 #Preview("Catalog") {
-    CatalogView(repository: MockProductRepository(products: Product.mockProducts))
-        .environment(CartViewModel(repository: MockCartRepository()))
+    CatalogView(repository: NullProductRepository())
+        .environment(CartViewModel(repository: NullCartRepository()))
 }

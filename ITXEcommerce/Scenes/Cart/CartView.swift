@@ -15,6 +15,7 @@ struct CartView: View {
     @State private var tooltipTask: Task<Void, Never>?
 
     var body: some View {
+        @Bindable var bindableViewModel = cartViewModel
         NavigationStack {
             Group {
                 if cartViewModel.items.isEmpty {
@@ -33,18 +34,12 @@ struct CartView: View {
                     Button("Close") { dismiss() }
                 }
             }
-            .alert(
-                "Cart error",
-                isPresented: Binding(
-                    get: { cartViewModel.lastError != nil },
-                    set: { if !$0 { cartViewModel.clearLastError() } }
-                ),
-                presenting: cartViewModel.lastError
-            ) { _ in
-                Button("OK", role: .cancel) { cartViewModel.clearLastError() }
-            } message: { error in
-                Text(error.localizedDescription)
-            }
+            .errorAlert(
+                error: Binding(
+                    get: { cartViewModel.cartError },
+                    set: { if $0 != nil { cartViewModel.clearCartError() } }
+                )
+            )
             .alert(
                 "Order Placed!",
                 isPresented: Binding(
@@ -139,5 +134,5 @@ private extension CartView {
 
 #Preview {
     CartView()
-        .environment(CartViewModel(repository: MockCartRepository()))
+        .environment(CartViewModel(repository: NullCartRepository()))
 }

@@ -11,11 +11,11 @@ struct SettingsView: View {
     @Environment(SettingsViewModel.self) private var viewModel
 
     var body: some View {
-        @Bindable var viewModel = viewModel
+        @Bindable var bindableViewModel = viewModel
         NavigationStack {
             Form {
                 Section("Appearance") {
-                    Picker("Theme", selection: $viewModel.colorScheme) {
+                    Picker("Theme", selection: $bindableViewModel.colorScheme) {
                         ForEach(AppColorScheme.allCases, id: \.self) { scheme in
                             Text(scheme.title).tag(scheme)
                         }
@@ -26,7 +26,7 @@ struct SettingsView: View {
                 }
 
                 Section("Language") {
-                    Picker("Language", selection: $viewModel.language) {
+                    Picker("Language", selection: $bindableViewModel.language) {
                         ForEach(AppLanguage.allCases, id: \.self) { lang in
                             Text(lang.title).tag(lang)
                         }
@@ -45,11 +45,10 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .confirmationDialog(
                 "Clear Cache",
-                isPresented: $viewModel.showClearCacheConfirmation,
+                isPresented: $bindableViewModel.showClearCacheConfirmation,
                 titleVisibility: .visible
             ) {
                 Button("Clear", role: .destructive) { viewModel.clearCache() }
-                Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This will remove all locally cached product data. It will be re-downloaded on next use.")
             }
@@ -61,19 +60,17 @@ struct SettingsView: View {
             } message: {
                 Text("The product cache has been cleared successfully.")
             }
-            .alert("Error", isPresented: Binding(
-                get: { viewModel.clearCacheError != nil },
-                set: { if !$0 { viewModel.clearCacheErrorDismissed() } }
-            ), presenting: viewModel.clearCacheError) { _ in
-                Button("OK", role: .cancel) { viewModel.clearCacheErrorDismissed() }
-            } message: { error in
-                Text(error.localizedDescription)
-            }
+            .errorAlert(
+                error: Binding(
+                    get: { viewModel.settingsError },
+                    set: { if $0 != nil { viewModel.clearCacheError() } }
+                )
+            )
         }
     }
 }
 
 #Preview {
     SettingsView()
-        .environment(SettingsViewModel(repository: MockProductRepository()))
+        .environment(SettingsViewModel(cacheManager: NullCacheManageable()))
 }

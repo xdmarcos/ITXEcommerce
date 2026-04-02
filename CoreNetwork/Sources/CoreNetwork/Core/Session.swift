@@ -16,7 +16,7 @@ public final class SessionImpl: Session, Sendable {
 
     public static let defaultConfiguration: URLSessionConfiguration = {
         let configuration = URLSessionConfiguration.default
-        configuration.waitsForConnectivity = true
+        configuration.waitsForConnectivity = false
         configuration.timeoutIntervalForRequest = 60 // seconds that a task will wait for data to arrive
         configuration.timeoutIntervalForResource = 300 // seconds for whole resource request to complete
         return configuration

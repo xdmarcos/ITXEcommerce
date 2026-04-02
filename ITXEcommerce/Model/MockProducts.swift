@@ -11,7 +11,8 @@ import Foundation
 extension Product {
     static let mockProducts: [Product] = [
         Product(
-            productId: "SKU-001",
+            productId: "001",
+            sku: "SKU-001",
             title: "Essence Mascara Lash Princess",
             brand: "Essence",
             productDescription: "Popular mascara known for its volumizing and lengthening effects. Achieve dramatic lashes with this long-lasting and cruelty-free formula.",
@@ -28,7 +29,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-002",
+            productId: "002",
+            sku: "SKU-002",
             title: "Annibale Colombo Bed",
             brand: "Annibale Colombo",
             productDescription: "Luxurious and elegant bed frame with a timeless design, perfect for those who appreciate fine craftsmanship in their bedroom.",
@@ -45,7 +47,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-003",
+            productId: "003",
+            sku: "SKU-003",
             title: "iPhone 15 Pro",
             brand: "Apple",
             productDescription: "The latest iPhone with a titanium frame, A17 Pro chip, and a 48MP main camera system. Available in four stunning finishes.",
@@ -63,7 +66,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-004",
+            productId: "004",
+            sku: "SKU-004",
             title: "Calvin Klein CK One",
             brand: "Calvin Klein",
             productDescription: "A classic unisex fragrance with notes of bergamot, green tea, and musk. Fresh, clean, and unmistakably iconic.",
@@ -79,7 +83,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-005",
+            productId: "005",
+            sku: "SKU-005",
             title: "MacBook Pro 14\"",
             brand: "Apple",
             productDescription: "Supercharged by the M3 Pro chip, the MacBook Pro delivers exceptional performance for professionals in a portable design.",
@@ -96,7 +101,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-006",
+            productId: "006",
+            sku: "SKU-006",
             title: "Hyaluronic Acid Serum",
             brand: "The Ordinary",
             productDescription: "A lightweight serum that delivers intense hydration with two molecular weights of hyaluronic acid, leaving skin plump and smooth.",
@@ -112,7 +118,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-007",
+            productId: "007",
+            sku: "SKU-007",
             title: "Slim Fit Oxford Shirt",
             brand: "Calvin Klein",
             productDescription: "A versatile slim-fit Oxford shirt crafted from breathable cotton. Perfect for both casual and formal occasions.",
@@ -129,7 +136,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-008",
+            productId: "008",
+            sku: "SKU-008",
             title: "Ray-Ban Wayfarer Classic",
             brand: "Ray-Ban",
             productDescription: "The iconic Wayfarer with UV400 lenses and a classic acetate frame. Timeless style for every occasion.",
@@ -145,7 +153,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-009",
+            productId: "009",
+            sku: "SKU-009",
             title: "Floral Wrap Dress",
             brand: "Zara",
             productDescription: "A lightweight wrap dress featuring a vibrant floral print. Flattering V-neckline and adjustable waist tie.",
@@ -162,7 +171,8 @@ extension Product {
             ]
         ),
         Product(
-            productId: "SKU-010",
+            productId: "010",
+            sku: "SKU-010",
             title: "Wireless Earbuds Pro",
             brand: "Samsung",
             productDescription: "Active noise cancellation, 30-hour battery life, and IPX5 water resistance for the ultimate wireless audio experience.",

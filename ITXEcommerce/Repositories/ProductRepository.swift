@@ -5,56 +5,45 @@
 //  Created by xdmGzDev on 30/3/26.
 //
 
-import CoreNetwork
 import Foundation
 import SwiftData
 
 @MainActor
-final class ProductRepository: ProductRepositoryProtocol {
+final class ProductRepository: ProductRepositoryProtocol, CacheManageable {
     private let modelContext: ModelContext
     private let upsertActor: ProductUpsertActor
-    private let apiClient: ApiClientProtocol = ApiClient()
+    private let remoteDataSource: any RemoteDataSourceProtocol
 
-    init(modelContainer: ModelContainer) {
+    init(modelContainer: ModelContainer, remoteDataSource: any RemoteDataSourceProtocol) {
         self.modelContext = modelContainer.mainContext
         self.upsertActor = ProductUpsertActor(modelContainer: modelContainer)
+        self.remoteDataSource = remoteDataSource
     }
 
     func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) {
-        do {
-            let response = try await apiClient.asyncRequest(
-                endpoint: DummyJsonEndpointProvider.getProducts(pagination: .init(limit: limit, skip: skip)),
-                responseModel: ProductsDTO.self
-            )
-            let snapshots = response.asSnapshots()
-            try await upsertActor.upsert(snapshots)
-            let products = try fetchByProductIds(snapshots.map(\.productId))
-            return (products, response.total)
-        } catch {
-            let mocks = Product.mockProducts
-            return (Array(mocks.dropFirst(skip).prefix(limit)), mocks.count)
-        }
+        let response = try await remoteDataSource.fetchPage(skip: skip, limit: limit)
+        let snapshots = response.asSnapshots()
+        try await upsertActor.upsert(snapshots)
+        let products = try fetchByProductIds(snapshots.map(\.productId))
+        return (products, response.total)
     }
 
     func fetchAll() async throws -> [Product] {
-        do {
-            let response = try await apiClient.asyncRequest(
-                endpoint: DummyJsonEndpointProvider.getProducts(pagination: .init(limit: 0, skip: nil)),
-                responseModel: ProductsDTO.self
-            )
-            try await upsertActor.upsert(response.asSnapshots())
-            return try modelContext.fetch(FetchDescriptor<Product>())
-        } catch {
-            return Product.mockProducts
-        }
+        let response = try await remoteDataSource.fetchAll()
+        try await upsertActor.upsert(response.asSnapshots())
+        return try modelContext.fetch(FetchDescriptor<Product>())
     }
 
     func fetch(category: ProductCategory?) async throws -> [Product] {
-        guard let category else { return try await fetchAll() }
-        let descriptor = FetchDescriptor<Product>(
-            predicate: #Predicate { $0.category == category }
-        )
-        return try modelContext.fetch(descriptor)
+        let all = try await fetchAll()
+        guard let category else { return all }
+        return all.filter { $0.category == category }
+    }
+
+    func fetchProduct(id: String) async throws -> Product? {
+        let snapshot = try await remoteDataSource.fetchProduct(id: id).asSnapshot()
+        try await upsertActor.upsert([snapshot])
+        return try fetchByProductIds([id]).first
     }
 
     func clearCache() throws {
@@ -71,21 +60,26 @@ final class ProductRepository: ProductRepositoryProtocol {
 
 extension ProductsDTO {
     func asSnapshots() -> [ProductSnapshot] {
-        products.map { dto in
-            ProductSnapshot(
-                productId: dto.sku,
-                title: dto.title,
-                brand: dto.brand ?? "Generic",
-                productDescription: dto.description,
-                category: ProductCategory(rawValue: dto.category) ?? .miscellaneous,
-                price: Decimal(dto.price),
-                discountPercentage: dto.discountPercentage,
-                rating: dto.rating,
-                stock: dto.stock,
-                tags: dto.tags,
-                thumbnail: dto.thumbnail,
-                images: dto.images
-            )
-        }
+        products.map { $0.asSnapshot() }
+    }
+}
+
+extension ProductDTO {
+    func asSnapshot() -> ProductSnapshot {
+        ProductSnapshot(
+            productId: String(id),
+            sku: sku,
+            title: title,
+            brand: brand ?? "Generic",
+            productDescription: description,
+            category: ProductCategory(rawValue: category) ?? .miscellaneous,
+            price: Decimal(price),
+            discountPercentage: discountPercentage,
+            rating: rating,
+            stock: stock,
+            tags: tags,
+            thumbnail: thumbnail,
+            images: images
+        )
     }
 }

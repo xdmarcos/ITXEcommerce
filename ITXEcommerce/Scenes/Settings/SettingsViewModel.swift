@@ -7,68 +7,53 @@
 
 import SwiftUI
 
-enum AppColorScheme: String, CaseIterable {
-    case light, dark, system
-
-    var title: String {
-        switch self {
-        case .light:  "Light"
-        case .dark:   "Dark"
-        case .system: "Auto"
-        }
-    }
-
-    var colorScheme: ColorScheme? {
-        switch self {
-        case .light:  .light
-        case .dark:   .dark
-        case .system: nil
-        }
-    }
-}
-
-enum AppLanguage: String, CaseIterable {
-    case english  = "en"
-    case galician = "gl"
-    case spanish  = "es"
-
-    var title: String {
-        switch self {
-        case .english:  "English"
-        case .galician: "Galician"
-        case .spanish:  "Spanish"
-        }
-    }
-
-    var locale: Locale { Locale(identifier: rawValue) }
-}
-
 @Observable
 final class SettingsViewModel {
     private enum Keys {
         static let colorScheme = "appColorScheme"
-        static let language    = "appLanguage"
+        static let language = "appLanguage"
+    }
+    private let cacheManager: any CacheManageable
+    private let defaults: UserDefaults
+    private(set) var cacheCleared = false
+
+    enum SettingsError: LocalizedError {
+        case unknown(Error? = nil)
+        case clearCache(Error? = nil)
+
+        var errorDescription: LocalizedStringResource? {
+            switch self {
+            case .unknown: return "Unknown Error"
+            case .clearCache: return "Failed to clear cache"
+            }
+        }
+
+        var recoverySuggestion: LocalizedStringResource? {
+            switch self {
+            case .unknown(let error): return LocalizedStringResource(stringLiteral: error?.localizedDescription ?? "")
+            case .clearCache: return "An unexpected error occurred. Please try again later."
+            }
+        }
     }
 
-    private let repository: any ProductRepositoryProtocol
+    var settingsError: Error?
 
     var colorScheme: AppColorScheme {
-        didSet { UserDefaults.standard.set(colorScheme.rawValue, forKey: Keys.colorScheme) }
+        didSet { defaults.set(colorScheme.rawValue, forKey: Keys.colorScheme) }
     }
     var language: AppLanguage {
-        didSet { UserDefaults.standard.set(language.rawValue, forKey: Keys.language) }
+        didSet { defaults.set(language.rawValue, forKey: Keys.language) }
     }
     var showClearCacheConfirmation = false
-    private(set) var cacheCleared = false
-    private(set) var clearCacheError: Error?
 
-    init(repository: any ProductRepositoryProtocol) {
-        self.repository = repository
+    init(cacheManager: any CacheManageable, defaults: UserDefaults = .standard) {
+        self.cacheManager = cacheManager
+        self.defaults = defaults
         colorScheme = AppColorScheme(
-            rawValue: UserDefaults.standard.string(forKey: Keys.colorScheme) ?? ""
+            rawValue: defaults.string(forKey: Keys.colorScheme) ?? ""
         ) ?? .system
         language = AppLanguage(
-            rawValue: UserDefaults.standard.string(forKey: Keys.language) ?? ""
+            rawValue: defaults.string(forKey: Keys.language) ?? ""
         ) ?? .english
     }
 
@@ -80,18 +65,19 @@ final class SettingsViewModel {
         cacheCleared = false
     }
 
-    func clearCacheErrorDismissed() {
-        clearCacheError = nil
+    func clearCacheError() {
+        settingsError = nil
     }
 
     @discardableResult
     func clearCache() -> Task<Void, Never> {
         Task { @MainActor in
             do {
-                try self.repository.clearCache()
-                self.cacheCleared = true
+                try cacheManager.clearCache()
+                cacheCleared = true
+                clearCacheError()
             } catch {
-                self.clearCacheError = error
+                settingsError = SettingsError.clearCache(error)
             }
         }
     }

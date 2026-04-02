@@ -30,33 +30,33 @@ private extension RootView {
             TabView {
                 CatalogView(repository: productRepository)
                     .tabItem {
-                        Label(AppTab.catalog.title, systemImage: AppTab.catalog.systemImage)
+                        Label(AppTabConfig.catalog.title, systemImage: AppTabConfig.catalog.systemImage)
                     }
                 QuickStartView()
                     .tabItem {
-                        Label(AppTab.quickStart.title, systemImage: AppTab.quickStart.systemImage)
+                        Label(AppTabConfig.quickStart.title, systemImage: AppTabConfig.quickStart.systemImage)
                     }
                 SettingsView()
                     .tabItem {
-                        Label(AppTab.settings.title, systemImage: AppTab.settings.systemImage)
+                        Label(AppTabConfig.settings.title, systemImage: AppTabConfig.settings.systemImage)
                     }
             }
         }
     }
 
     @available(iOS 26.0, *)
-    @TabContentBuilder<AppTab>
-    var tabs: some TabContent<AppTab> {
+    @TabContentBuilder<AppTabConfig>
+    var tabs: some TabContent<AppTabConfig> {
         catalogTab
         quickStartTab
         settingsTab
     }
 
     @available(iOS 26.0, *)
-    var catalogTab: some TabContent<AppTab> {
+    var catalogTab: some TabContent<AppTabConfig> {
         Tab(
-            AppTab.catalog.title,
-            systemImage: AppTab.catalog.systemImage,
+            AppTabConfig.catalog.title,
+            systemImage: AppTabConfig.catalog.systemImage,
             value: .catalog
         ) {
             CatalogView(repository: productRepository)
@@ -64,10 +64,10 @@ private extension RootView {
     }
 
     @available(iOS 26.0, *)
-    var quickStartTab: some TabContent<AppTab> {
+    var quickStartTab: some TabContent<AppTabConfig> {
         Tab(
-            AppTab.quickStart.title,
-            systemImage: AppTab.quickStart.systemImage,
+            AppTabConfig.quickStart.title,
+            systemImage: AppTabConfig.quickStart.systemImage,
             value: .quickStart
         ) {
             QuickStartView()
@@ -75,10 +75,10 @@ private extension RootView {
     }
 
     @available(iOS 26.0, *)
-    var settingsTab: some TabContent<AppTab> {
+    var settingsTab: some TabContent<AppTabConfig> {
         Tab(
-            AppTab.settings.title,
-            systemImage: AppTab.settings.systemImage,
+            AppTabConfig.settings.title,
+            systemImage: AppTabConfig.settings.systemImage,
             value: .settings
         ) {
             SettingsView()

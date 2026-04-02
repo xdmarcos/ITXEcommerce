@@ -1,11 +1,12 @@
 //
 //  MockProductRepository.swift
-//  ITXEcommerce
+//  ITXEcommerceTests
 //
 //  Created by xdmGzDev on 30/3/26.
 //
 
 import Foundation
+@testable import ITXEcommerce
 
 final class MockProductRepository: ProductRepositoryProtocol {
     private let products: [Product]
@@ -28,5 +29,7 @@ final class MockProductRepository: ProductRepositoryProtocol {
         return (page, products.count)
     }
 
-    func clearCache() throws {}
+    func fetchProduct(id: String) async throws -> Product? {
+        products.first(where: { $0.productId == id })
+    }
 }

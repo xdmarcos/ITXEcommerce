@@ -13,11 +13,6 @@ struct ProductDetailViewModelTests {
 
     // MARK: Initial state
 
-    @Test func initialShowCartDetailIsFalse() {
-        let vm = ProductDetailViewModel(product: makeProduct())
-        #expect(vm.showCartDetail == false)
-    }
-
     @Test func initialCurrentImageIndexIsZero() {
         let vm = ProductDetailViewModel(product: makeProduct())
         #expect(vm.currentImageIndex == 0)
@@ -27,6 +22,12 @@ struct ProductDetailViewModelTests {
         let product = makeProduct(id: "unique-id")
         let vm = ProductDetailViewModel(product: product)
         #expect(vm.product.productId == "unique-id")
+    }
+
+    @Test func productSkuIsAccessible() {
+        let product = makeProduct(id: "P1")
+        let vm = ProductDetailViewModel(product: product)
+        #expect(vm.product.sku == "SKU-1234")
     }
 
     @Test func productTitleIsAccessible() {
@@ -71,35 +72,29 @@ struct ProductDetailViewModelTests {
         #expect(vm.product.tags == ["test", "mock"])
     }
 
-    // MARK: Cart button
-
-    @Test func cartButtonOnTapSetsShowCartDetail() {
-        let vm = ProductDetailViewModel(product: makeProduct())
-
-        vm.cartButtonOnTap()
-
-        #expect(vm.showCartDetail == true)
-    }
 }
 
 // MARK: - Helpers
 
-fileprivate func makeProduct(id: String = "P1") -> Product {
-    Product(
-        productId: id,
-        title: "Test Product",
-        brand: "Test Brand",
-        productDescription: "Test Description",
-        category: .beauty,
-        price: 29.99,
-        discountPercentage: 5.0,
-        rating: 4.5,
-        stock: 10,
-        tags: ["test", "mock"],
-        thumbnail: "https://example.com/thumbnail.webp",
-        images: [
-            "https://example.com/image1.webp",
-            "https://example.com/image2.webp"
-        ]
-    )
+private extension ProductDetailViewModelTests {
+    func makeProduct(id: String = "P1") -> Product {
+        Product(
+            productId: id,
+            sku: "SKU-1234",
+            title: "Test Product",
+            brand: "Test Brand",
+            productDescription: "Test Description",
+            category: .beauty,
+            price: 29.99,
+            discountPercentage: 5.0,
+            rating: 4.5,
+            stock: 10,
+            tags: ["test", "mock"],
+            thumbnail: "https://example.com/thumbnail.webp",
+            images: [
+                "https://example.com/image1.webp",
+                "https://example.com/image2.webp"
+            ]
+        )
+    }
 }

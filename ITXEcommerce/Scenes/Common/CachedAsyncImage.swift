@@ -35,15 +35,22 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     private let url: URL?
     private let content: (Image) -> Content
     private let placeholder: () -> Placeholder
+    private let imageLoader: (URL) async throws -> Data
 
     @State private var uiImage: UIImage?
+    @State private var loadFailed = false
 
     init(
         url: URL?,
+        imageLoader: @escaping (URL) async throws -> Data = { url in
+            let (data, _) = try await URLSession.shared.data(from: url)
+            return data
+        },
         @ViewBuilder content: @escaping (Image) -> Content,
         @ViewBuilder placeholder: @escaping () -> Placeholder
     ) {
         self.url = url
+        self.imageLoader = imageLoader
         self.content = content
         self.placeholder = placeholder
     }
@@ -54,20 +61,33 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
                 content(Image(uiImage: uiImage))
             } else {
                 placeholder()
+                if loadFailed {
+                    Image(systemName: "photo.badge.exclamationmark")
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .task(id: url) { await load() }
     }
 
     private func load() async {
+        uiImage = nil
+        loadFailed = false
         guard let url else { return }
         if let cached = ImageCache.shared.image(for: url) {
             uiImage = cached
             return
         }
-        guard let (data, _) = try? await URLSession.shared.data(from: url),
-              let loaded = UIImage(data: data) else { return }
-        ImageCache.shared.store(loaded, for: url)
-        uiImage = loaded
+        do {
+            let data = try await imageLoader(url)
+            guard let loaded = UIImage(data: data) else {
+                loadFailed = true
+                return
+            }
+            ImageCache.shared.store(loaded, for: url)
+            uiImage = loaded
+        } catch {
+            loadFailed = true
+        }
     }
 }

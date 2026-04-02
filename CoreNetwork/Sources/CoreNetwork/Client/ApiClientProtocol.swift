@@ -22,32 +22,3 @@ public protocol ApiClientProtocol: Sendable {
         interceptor: (any RequestInterceptor)?
     ) async throws -> T
 }
-
-public extension ApiClientProtocol {
-
-    func asyncRequest<T: Decodable>(
-        endpoint: EndpointProvider,
-        responseModel: T.Type
-    ) async throws -> T {
-        try await asyncRequest(
-            endpoint: endpoint,
-            responseModel: responseModel
-        )
-    }
-
-    func asyncRequest<T: Decodable>(
-        endpoint: EndpointProvider,
-        responseModel: T.Type,
-        requestOptions: RequestOptions,
-        responseOptions: ResponseOptions,
-        interceptor: (any RequestInterceptor)?
-    ) async throws -> T {
-        try await asyncRequest(
-            endpoint: endpoint,
-            responseModel: responseModel,
-            requestOptions: requestOptions,
-            responseOptions: responseOptions,
-            interceptor: interceptor
-        )
-    }
-}

@@ -5,6 +5,7 @@
 //  Created by xdmGzDev on 27/3/26.
 //
 
+import CoreNetwork
 import SwiftData
 import SwiftUI
 
@@ -21,10 +22,19 @@ struct ITXEcommerceApp: App {
         do {
             let container = try ModelContainer(for: Product.self, CartItem.self)
             self.container = container
-            let productRepository = ProductRepository(modelContainer: container)
+            let productRepository = ProductRepository(
+                modelContainer: container,
+                remoteDataSource: DummyJsonRemoteDataSource(apiClient: ApiClient())
+            )
             self.productRepository = productRepository
-            self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
-            self.settingsViewModel = SettingsViewModel(repository: productRepository)
+            let cartRepository = CartRepository(modelContext: container.mainContext)
+            self.cartViewModel = CartViewModel(repository: cartRepository)
+            self.settingsViewModel = SettingsViewModel(
+                cacheManager: ClearAllDataService(
+                    productRepository: productRepository,
+                    cartRepository: cartRepository
+                )
+            )
         } catch {
             fatalError("ModelContainer init failed: \(error)")
         }

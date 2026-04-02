@@ -10,8 +10,8 @@ import Foundation
 @Observable
 final class RootViewModel {
     #if CONF_PROD
-    var selection: AppTab = .quickStart
+    var selection: AppTabConfig = .quickStart
     #else
-    var selection: AppTab = .catalog
+    var selection: AppTabConfig = .catalog
     #endif
 }

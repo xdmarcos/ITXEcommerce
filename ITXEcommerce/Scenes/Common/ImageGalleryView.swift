@@ -22,7 +22,7 @@ struct ImageGalleryView: View {
                 CachedAsyncImage(url: URL(string: images[index])) { image in
                     image
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
+                        .scaledToFit()
                 } placeholder: {
                     Rectangle()
                         .foregroundStyle(.secondary.opacity(0.12))
