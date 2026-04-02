@@ -117,7 +117,7 @@ private extension ApiClient {
 
         logResponse(response: response, data: data, with: responseOptions)
         try validate(response: response, with: responseOptions)
-        let decoded: T = try decodeResponse(data: data)
+        let decoded: T = try decodeResponse(data: data, using: responseOptions.decoder)
         logDecodedResponse(data: decoded)
 
         return (decoded, request)
@@ -166,13 +166,13 @@ private extension ApiClient {
         }
     }
 
-    func decodeResponse<T: Decodable>(data: Data) throws -> T {
+    func decodeResponse<T: Decodable>(data: Data, using decoder: DataDecoder) throws -> T {
         guard !data.isEmpty else {
             throw ApiError(customError: .responseContentDataUnavailable)
         }
 
         do {
-            return try JSONDecoder().decode(T.self, from: data)
+            return try decoder.decode(T.self, from: data)
         } catch {
             throw ApiError(customError: .decodingData, originalError: error)
         }

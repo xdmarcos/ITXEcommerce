@@ -12,17 +12,6 @@ import SwiftUI
 @MainActor
 struct SettingsViewModelTests {
 
-    private enum Keys {
-        static let colorScheme = "appColorScheme"
-        static let language = "appLanguage"
-    }
-
-    /// Returns a fresh, isolated UserDefaults suite so parallel tests never share state.
-    private func makeDefaults() -> UserDefaults {
-        let suite = UUID().uuidString
-        return UserDefaults(suiteName: suite)!
-    }
-
     // MARK: Initial state
 
     @Test func defaultColorSchemeIsSystem() {
@@ -203,10 +192,23 @@ struct AppLanguageTests {
 
 // MARK: - Helpers
 
-fileprivate final class FailingClearCacheRepository: ProductRepositoryProtocol {
-    struct ClearCacheError: Error {}
-    func fetchAll() async throws -> [Product] { [] }
-    func fetch(category: ProductCategory?) async throws -> [Product] { [] }
-    func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { ([], 0) }
-    func clearCache() throws { throw ClearCacheError() }
+private extension SettingsViewModelTests {
+    enum Keys {
+        static let colorScheme = "appColorScheme"
+        static let language = "appLanguage"
+    }
+
+    /// Returns a fresh, isolated UserDefaults suite so parallel tests never share state.
+    func makeDefaults() -> UserDefaults {
+        UserDefaults(suiteName: UUID().uuidString)!
+    }
+
+    final class FailingClearCacheRepository: ProductRepositoryProtocol {
+        struct ClearCacheError: Error {}
+        func fetchAll() async throws -> [Product] { [] }
+        func fetch(category: ProductCategory?) async throws -> [Product] { [] }
+        func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { ([], 0) }
+        func fetchProduct(id: String) async throws -> Product? { nil }
+        func clearCache() throws { throw ClearCacheError() }
+    }
 }

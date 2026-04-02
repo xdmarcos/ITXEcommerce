@@ -472,27 +472,31 @@ struct CatalogViewModelTests {
 
 // MARK: - Helpers
 
-fileprivate func makeProduct(
-    id: String = UUID().uuidString,
-    title: String = "Test Product",
-    category: ProductCategory = .beauty,
-    price: Decimal = 29.99
-) -> Product {
-    Product(
-        productId: id,
-        sku: "SKU-1234",
-        title: title,
-        brand: "Test Brand",
-        productDescription: "Test Description",
-        category: category,
-        price: price
-    )
-}
+private extension CatalogViewModelTests {
 
-fileprivate final class FailingProductRepository: ProductRepositoryProtocol {
-    struct FetchError: Error {}
-    func fetchAll() async throws -> [Product] { throw FetchError() }
-    func fetch(category: ProductCategory?) async throws -> [Product] { throw FetchError() }
-    func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { throw FetchError() }
-    func clearCache() throws { throw FetchError() }
+    func makeProduct(
+        id: String = UUID().uuidString,
+        title: String = "Test Product",
+        category: ProductCategory = .beauty,
+        price: Decimal = 29.99
+    ) -> Product {
+        Product(
+            productId: id,
+            sku: "SKU-1234",
+            title: title,
+            brand: "Test Brand",
+            productDescription: "Test Description",
+            category: category,
+            price: price
+        )
+    }
+
+    final class FailingProductRepository: ProductRepositoryProtocol {
+        struct FetchError: Error {}
+        func fetchAll() async throws -> [Product] { throw FetchError() }
+        func fetch(category: ProductCategory?) async throws -> [Product] { throw FetchError() }
+        func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { throw FetchError() }
+        func fetchProduct(id: String) async throws -> Product? { throw FetchError() }
+        func clearCache() throws { throw FetchError() }
+    }
 }

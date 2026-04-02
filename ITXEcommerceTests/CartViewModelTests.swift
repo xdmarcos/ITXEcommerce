@@ -341,28 +341,31 @@ struct CartViewModelTests {
 
 // MARK: - Helpers
 
-fileprivate func makeProduct(
-    id: String = UUID().uuidString,
-    price: Decimal = 10.00,
-    stock: Int = 1
-) -> Product {
-    Product(
-        productId: id,
-        sku: "SKU-1234",
-        title: "Test Product",
-        brand: "Test Brand",
-        productDescription: "Test Description",
-        category: .beauty,
-        price: price,
-        stock: stock
-    )
-}
+private extension CartViewModelTests {
 
-fileprivate final class FailingCartRepository: CartRepositoryProtocol {
-    struct CartError: Error {}
-    func fetchItems() throws -> [CartItem] { throw CartError() }
-    func add(product: Product) throws { throw CartError() }
-    func updateQuantity(_ item: CartItem, to quantity: Int) throws { throw CartError() }
-    func remove(_ item: CartItem) throws { throw CartError() }
-    func clear() throws { throw CartError() }
+    func makeProduct(
+        id: String = UUID().uuidString,
+        price: Decimal = 10.00,
+        stock: Int = 1
+    ) -> Product {
+        Product(
+            productId: id,
+            sku: "SKU-1234",
+            title: "Test Product",
+            brand: "Test Brand",
+            productDescription: "Test Description",
+            category: .beauty,
+            price: price,
+            stock: stock
+        )
+    }
+
+    final class FailingCartRepository: CartRepositoryProtocol {
+        struct CartError: Error {}
+        func fetchItems() throws -> [CartItem] { throw CartError() }
+        func add(product: Product) throws { throw CartError() }
+        func updateQuantity(_ item: CartItem, to quantity: Int) throws { throw CartError() }
+        func remove(_ item: CartItem) throws { throw CartError() }
+        func clear() throws { throw CartError() }
+    }
 }

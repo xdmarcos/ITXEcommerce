@@ -35,11 +35,9 @@ final class ProductRepository: ProductRepositoryProtocol {
     }
 
     func fetch(category: ProductCategory?) async throws -> [Product] {
-        guard let category else { return try await fetchAll() }
-        let descriptor = FetchDescriptor<Product>(
-            predicate: #Predicate { $0.category == category }
-        )
-        return try modelContext.fetch(descriptor)
+        let all = try await fetchAll()
+        guard let category else { return all }
+        return all.filter { $0.category == category }
     }
 
     func fetchProduct(id: String) async throws -> Product? {
@@ -49,6 +47,7 @@ final class ProductRepository: ProductRepositoryProtocol {
     }
 
     func clearCache() throws {
+        try modelContext.delete(model: CartItem.self)
         try modelContext.delete(model: Product.self)
         try modelContext.save()
     }

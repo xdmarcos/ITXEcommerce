@@ -76,23 +76,25 @@ struct ProductDetailViewModelTests {
 
 // MARK: - Helpers
 
-fileprivate func makeProduct(id: String = "P1") -> Product {
-    Product(
-        productId: id,
-        sku: "SKU-1234",
-        title: "Test Product",
-        brand: "Test Brand",
-        productDescription: "Test Description",
-        category: .beauty,
-        price: 29.99,
-        discountPercentage: 5.0,
-        rating: 4.5,
-        stock: 10,
-        tags: ["test", "mock"],
-        thumbnail: "https://example.com/thumbnail.webp",
-        images: [
-            "https://example.com/image1.webp",
-            "https://example.com/image2.webp"
-        ]
-    )
+private extension ProductDetailViewModelTests {
+    func makeProduct(id: String = "P1") -> Product {
+        Product(
+            productId: id,
+            sku: "SKU-1234",
+            title: "Test Product",
+            brand: "Test Brand",
+            productDescription: "Test Description",
+            category: .beauty,
+            price: 29.99,
+            discountPercentage: 5.0,
+            rating: 4.5,
+            stock: 10,
+            tags: ["test", "mock"],
+            thumbnail: "https://example.com/thumbnail.webp",
+            images: [
+                "https://example.com/image1.webp",
+                "https://example.com/image2.webp"
+            ]
+        )
+    }
 }

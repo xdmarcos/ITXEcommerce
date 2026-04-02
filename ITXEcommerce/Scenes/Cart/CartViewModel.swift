@@ -21,7 +21,7 @@ final class CartViewModel {
     init(repository: any CartRepositoryProtocol) {
         self.repository = repository
         // to load carItems on app launch
-        loadTask = Task { self.reload() }
+        loadTask = Task { @MainActor in self.reload() }
     }
 
     var itemCount: Int {
