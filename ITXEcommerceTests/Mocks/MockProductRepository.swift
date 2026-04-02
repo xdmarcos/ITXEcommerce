@@ -32,6 +32,4 @@ final class MockProductRepository: ProductRepositoryProtocol {
     func fetchProduct(id: String) async throws -> Product? {
         products.first(where: { $0.productId == id })
     }
-
-    func clearCache() throws {}
 }

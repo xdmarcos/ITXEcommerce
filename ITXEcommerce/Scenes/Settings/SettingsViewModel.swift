@@ -13,7 +13,7 @@ final class SettingsViewModel {
         static let colorScheme = "appColorScheme"
         static let language = "appLanguage"
     }
-    private let repository: any ProductRepositoryProtocol
+    private let cacheManager: any CacheManageable
     private let defaults: UserDefaults
     private(set) var cacheCleared = false
 
@@ -46,8 +46,8 @@ final class SettingsViewModel {
     }
     var showClearCacheConfirmation = false
 
-    init(repository: any ProductRepositoryProtocol, defaults: UserDefaults = .standard) {
-        self.repository = repository
+    init(cacheManager: any CacheManageable, defaults: UserDefaults = .standard) {
+        self.cacheManager = cacheManager
         self.defaults = defaults
         colorScheme = AppColorScheme(
             rawValue: defaults.string(forKey: Keys.colorScheme) ?? ""
@@ -73,7 +73,7 @@ final class SettingsViewModel {
     func clearCache() -> Task<Void, Never> {
         Task { @MainActor in
             do {
-                try repository.clearCache()
+                try cacheManager.clearCache()
                 cacheCleared = true
                 clearCacheError()
             } catch {

@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @MainActor
-final class ProductRepository: ProductRepositoryProtocol {
+final class ProductRepository: ProductRepositoryProtocol, CacheManageable {
     private let modelContext: ModelContext
     private let upsertActor: ProductUpsertActor
     private let remoteDataSource: any RemoteDataSourceProtocol

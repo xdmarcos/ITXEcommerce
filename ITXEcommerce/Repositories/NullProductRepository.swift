@@ -12,5 +12,4 @@ final class NullProductRepository: ProductRepositoryProtocol {
     func fetch(category: ProductCategory?) async throws -> [Product] { [] }
     func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) { ([], 0) }
     func fetchProduct(id: String) async throws -> Product? { nil }
-    func clearCache() throws {}
 }

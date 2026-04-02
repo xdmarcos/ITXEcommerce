@@ -28,7 +28,7 @@ struct ITXEcommerceApp: App {
             )
             self.productRepository = productRepository
             self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
-            self.settingsViewModel = SettingsViewModel(repository: productRepository)
+            self.settingsViewModel = SettingsViewModel(cacheManager: productRepository)
         } catch {
             fatalError("ModelContainer init failed: \(error)")
         }

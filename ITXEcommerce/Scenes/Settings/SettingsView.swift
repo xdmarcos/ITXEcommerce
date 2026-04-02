@@ -72,5 +72,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
-        .environment(SettingsViewModel(repository: NullProductRepository()))
+        .environment(SettingsViewModel(cacheManager: NullCacheManageable()))
 }
