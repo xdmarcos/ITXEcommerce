@@ -47,7 +47,6 @@ final class ProductRepository: ProductRepositoryProtocol, CacheManageable {
     }
 
     func clearCache() throws {
-        try modelContext.delete(model: CartItem.self)
         try modelContext.delete(model: Product.self)
         try modelContext.save()
     }

@@ -168,7 +168,7 @@ struct ProductRepositoryTests {
         #expect(stored.isEmpty)
     }
 
-    @Test func clearCacheAlsoRemovesCartItems() async throws {
+    @Test func clearCacheDoesNotRemoveCartItems() async throws {
         let container = try makeContainer()
         let dto = makeProductsDTO(ids: [1])
         let repo = ProductRepository(modelContainer: container, remoteDataSource: MockRemoteDataSource(allResult: dto))
@@ -180,7 +180,7 @@ struct ProductRepositoryTests {
         try repo.clearCache()
 
         let cartItems = try container.mainContext.fetch(FetchDescriptor<CartItem>())
-        #expect(cartItems.isEmpty)
+        #expect(cartItems.count == 1)
     }
 }
 

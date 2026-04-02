@@ -27,8 +27,14 @@ struct ITXEcommerceApp: App {
                 remoteDataSource: DummyJsonRemoteDataSource(apiClient: ApiClient())
             )
             self.productRepository = productRepository
-            self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
-            self.settingsViewModel = SettingsViewModel(cacheManager: productRepository)
+            let cartRepository = CartRepository(modelContext: container.mainContext)
+            self.cartViewModel = CartViewModel(repository: cartRepository)
+            self.settingsViewModel = SettingsViewModel(
+                cacheManager: ClearAllDataService(
+                    productRepository: productRepository,
+                    cartRepository: cartRepository
+                )
+            )
         } catch {
             fatalError("ModelContainer init failed: \(error)")
         }
