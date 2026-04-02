@@ -13,11 +13,12 @@ import SwiftData
 final class ProductRepository: ProductRepositoryProtocol {
     private let modelContext: ModelContext
     private let upsertActor: ProductUpsertActor
-    private let apiClient: ApiClientProtocol = ApiClient()
+    private let apiClient: ApiClientProtocol
 
-    init(modelContainer: ModelContainer) {
+    init(modelContainer: ModelContainer, apiClient: ApiClientProtocol) {
         self.modelContext = modelContainer.mainContext
         self.upsertActor = ProductUpsertActor(modelContainer: modelContainer)
+        self.apiClient = apiClient
     }
 
     func fetchPage(skip: Int, limit: Int) async throws -> (products: [Product], total: Int) {

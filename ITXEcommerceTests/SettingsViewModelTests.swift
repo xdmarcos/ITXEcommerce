@@ -17,80 +17,87 @@ struct SettingsViewModelTests {
         static let language = "appLanguage"
     }
 
-    init() {
-        UserDefaults.standard.removeObject(forKey: Keys.colorScheme)
-        UserDefaults.standard.removeObject(forKey: Keys.language)
+    /// Returns a fresh, isolated UserDefaults suite so parallel tests never share state.
+    private func makeDefaults() -> UserDefaults {
+        let suite = UUID().uuidString
+        return UserDefaults(suiteName: suite)!
     }
 
     // MARK: Initial state
 
     @Test func defaultColorSchemeIsSystem() {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         #expect(vm.colorScheme == .system)
     }
 
     @Test func defaultLanguageIsEnglish() {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         #expect(vm.language == .english)
     }
 
     @Test func showClearCacheConfirmationIsFalseInitially() {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         #expect(vm.showClearCacheConfirmation == false)
     }
 
     @Test func cacheClearedIsFalseInitially() {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         #expect(vm.cacheCleared == false)
     }
 
     @Test func clearCacheErrorIsNilInitially() {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         #expect(vm.clearCacheError == nil)
     }
 
     // MARK: UserDefaults persistence
 
     @Test func changingColorSchemePersistsToUserDefaults() {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let defaults = makeDefaults()
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: defaults)
         vm.colorScheme = .dark
-        #expect(UserDefaults.standard.string(forKey: Keys.colorScheme) == "dark")
+        #expect(defaults.string(forKey: Keys.colorScheme) == "dark")
     }
 
     @Test func changingLanguagePersistsToUserDefaults() {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let defaults = makeDefaults()
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: defaults)
         vm.language = .spanish
-        #expect(UserDefaults.standard.string(forKey: Keys.language) == "es")
+        #expect(defaults.string(forKey: Keys.language) == "es")
     }
 
     @Test func initRestoresColorSchemeFromUserDefaults() {
-        UserDefaults.standard.set("light", forKey: Keys.colorScheme)
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let defaults = makeDefaults()
+        defaults.set("light", forKey: Keys.colorScheme)
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: defaults)
         #expect(vm.colorScheme == .light)
     }
 
     @Test func initRestoresLanguageFromUserDefaults() {
-        UserDefaults.standard.set("gl", forKey: Keys.language)
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let defaults = makeDefaults()
+        defaults.set("gl", forKey: Keys.language)
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: defaults)
         #expect(vm.language == .galician)
     }
 
     @Test func initFallsBackToSystemForUnknownColorScheme() {
-        UserDefaults.standard.set("unknown", forKey: Keys.colorScheme)
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let defaults = makeDefaults()
+        defaults.set("unknown", forKey: Keys.colorScheme)
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: defaults)
         #expect(vm.colorScheme == .system)
     }
 
     @Test func initFallsBackToEnglishForUnknownLanguage() {
-        UserDefaults.standard.set("unknown", forKey: Keys.language)
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let defaults = makeDefaults()
+        defaults.set("unknown", forKey: Keys.language)
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: defaults)
         #expect(vm.language == .english)
     }
 
     // MARK: Clear cache button
 
     @Test func clearCacheButtonOnTapSetsShowConfirmation() {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         vm.clearCacheButtonOnTap()
         #expect(vm.showClearCacheConfirmation == true)
     }
@@ -98,13 +105,13 @@ struct SettingsViewModelTests {
     // MARK: Clear cache — success
 
     @Test func clearCacheSetsCacheClearedOnSuccess() async {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         await vm.clearCache().value
         #expect(vm.cacheCleared == true)
     }
 
     @Test func clearCacheKeepsErrorNilOnSuccess() async {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         await vm.clearCache().value
         #expect(vm.clearCacheError == nil)
     }
@@ -112,13 +119,13 @@ struct SettingsViewModelTests {
     // MARK: Clear cache — failure
 
     @Test func clearCacheSetsErrorOnFailure() async {
-        let vm = SettingsViewModel(repository: FailingClearCacheRepository())
+        let vm = SettingsViewModel(repository: FailingClearCacheRepository(), defaults: makeDefaults())
         await vm.clearCache().value
         #expect(vm.clearCacheError != nil)
     }
 
     @Test func clearCacheDoesNotSetCacheClearedOnFailure() async {
-        let vm = SettingsViewModel(repository: FailingClearCacheRepository())
+        let vm = SettingsViewModel(repository: FailingClearCacheRepository(), defaults: makeDefaults())
         await vm.clearCache().value
         #expect(vm.cacheCleared == false)
     }
@@ -126,14 +133,14 @@ struct SettingsViewModelTests {
     // MARK: Dismiss handlers
 
     @Test func cacheClearedDismissedResetsCacheCleared() async {
-        let vm = SettingsViewModel(repository: MockProductRepository())
+        let vm = SettingsViewModel(repository: MockProductRepository(), defaults: makeDefaults())
         await vm.clearCache().value
         vm.cacheClearedDismissed()
         #expect(vm.cacheCleared == false)
     }
 
     @Test func clearCacheErrorDismissedResetsError() async {
-        let vm = SettingsViewModel(repository: FailingClearCacheRepository())
+        let vm = SettingsViewModel(repository: FailingClearCacheRepository(), defaults: makeDefaults())
         await vm.clearCache().value
         vm.clearCacheErrorDismissed()
         #expect(vm.clearCacheError == nil)

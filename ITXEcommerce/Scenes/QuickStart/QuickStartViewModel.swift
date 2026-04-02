@@ -8,7 +8,7 @@
 import Foundation
 
 @Observable
-class QuickStartViewModel {
+final class QuickStartViewModel {
     var readmeContent: String {
         guard
             let url = Bundle.main.url(forResource: "README", withExtension: "md"),

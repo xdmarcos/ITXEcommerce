@@ -51,24 +51,26 @@ final class SettingsViewModel {
     }
 
     private let repository: any ProductRepositoryProtocol
+    private let defaults: UserDefaults
 
     var colorScheme: AppColorScheme {
-        didSet { UserDefaults.standard.set(colorScheme.rawValue, forKey: Keys.colorScheme) }
+        didSet { defaults.set(colorScheme.rawValue, forKey: Keys.colorScheme) }
     }
     var language: AppLanguage {
-        didSet { UserDefaults.standard.set(language.rawValue, forKey: Keys.language) }
+        didSet { defaults.set(language.rawValue, forKey: Keys.language) }
     }
     var showClearCacheConfirmation = false
     private(set) var cacheCleared = false
     private(set) var clearCacheError: Error?
 
-    init(repository: any ProductRepositoryProtocol) {
+    init(repository: any ProductRepositoryProtocol, defaults: UserDefaults = .standard) {
         self.repository = repository
+        self.defaults = defaults
         colorScheme = AppColorScheme(
-            rawValue: UserDefaults.standard.string(forKey: Keys.colorScheme) ?? ""
+            rawValue: defaults.string(forKey: Keys.colorScheme) ?? ""
         ) ?? .system
         language = AppLanguage(
-            rawValue: UserDefaults.standard.string(forKey: Keys.language) ?? ""
+            rawValue: defaults.string(forKey: Keys.language) ?? ""
         ) ?? .english
     }
 
