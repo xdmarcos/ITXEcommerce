@@ -105,16 +105,4 @@ final class CatalogViewModel {
             showErrorAlert = true
         }
     }
-
-    private func reload(for category: ProductCategory?) {
-        Task {
-            do {
-                products = try await repository.fetch(category: category)
-                clearLoadError()
-            } catch {
-                loadError = error
-                showErrorAlert = true
-            }
-        }
-    }
 }

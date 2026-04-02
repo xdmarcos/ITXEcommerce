@@ -22,7 +22,10 @@ struct ITXEcommerceApp: App {
         do {
             let container = try ModelContainer(for: Product.self, CartItem.self)
             self.container = container
-            let productRepository = ProductRepository(modelContainer: container, apiClient: ApiClient())
+            let productRepository = ProductRepository(
+                modelContainer: container,
+                remoteDataSource: DummyJsonRemoteDataSource(apiClient: ApiClient())
+            )
             self.productRepository = productRepository
             self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
             self.settingsViewModel = SettingsViewModel(repository: productRepository)
