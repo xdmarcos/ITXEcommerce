@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct CartItemRow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     let item: CartItem
     var showTooltip: Bool = false
     var tooltip: String?
@@ -100,11 +102,11 @@ struct CartItemRow: View {
                     .background(.ultraThinMaterial, in: .capsule)
                     .fixedSize()
                     .offset(y: -30)
-                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+                    .transition(reduceMotion ? .opacity : .scale(scale: 0.8).combined(with: .opacity))
                     .allowsHitTesting(false)
             }
         }
-        .animation(.spring(duration: 0.25), value: showTooltip)
+        .animation(reduceMotion ? .default : .spring(duration: 0.25), value: showTooltip)
     }
 }
 

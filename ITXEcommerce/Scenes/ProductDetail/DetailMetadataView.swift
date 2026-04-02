@@ -13,13 +13,13 @@ struct DetailMetadataView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 16) {
-                Label(String(format: "%.1f", viewModel.product.rating), systemImage: "star.fill")
+                Label(viewModel.product.rating.formatted(.number.precision(.fractionLength(1))), systemImage: "star.fill")
                     .font(.subheadline)
                     .foregroundStyle(.orange)
 
                 if viewModel.product.discountPercentage > 0 {
                     Label(
-                        String(format: "-%.0f%%", viewModel.product.discountPercentage),
+                        "-\(viewModel.product.discountPercentage.formatted(.number.precision(.fractionLength(0))))%",
                         systemImage: "tag.fill"
                     )
                     .font(.subheadline)
@@ -32,7 +32,7 @@ struct DetailMetadataView: View {
             }
 
             if !viewModel.product.tags.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
+                ScrollView(.horizontal) {
                     HStack(spacing: 8) {
                         ForEach(viewModel.product.tags, id: \.self) { tag in
                             Text(tag)
@@ -44,6 +44,7 @@ struct DetailMetadataView: View {
                         }
                     }
                 }
+                .scrollIndicators(.hidden)
             }
         }
     }

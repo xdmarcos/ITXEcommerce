@@ -10,7 +10,7 @@ import SwiftUI
 struct LaunchScreenView: View {
     var body: some View {
         VStack {
-            Image("logo")
+            Image(decorative: "logo")
         }
     }
 }

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct AddToCartButtonView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var canAdd: Bool
     @State private var justAdded: Bool = false
     private var onTap: () -> Void = { }
@@ -21,11 +23,7 @@ struct AddToCartButtonView: View {
         VStack(spacing: 8) {
             Button {
                 onTap()
-                withAnimation(.spring(duration: 0.3)) { justAdded = true }
-                Task {
-                    try? await Task.sleep(for: .seconds(1.5))
-                    withAnimation(.spring(duration: 0.3)) { justAdded = false }
-                }
+                withAnimation(reduceMotion ? .none : .spring(duration: 0.3)) { justAdded = true }
             } label: {
                 Label(
                     justAdded ? "Added!" : (canAdd ? "Add to Cart" : "Out of Stock"),
@@ -47,7 +45,12 @@ struct AddToCartButtonView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .animation(.easeInOut, value: canAdd)
+        .task(id: justAdded) {
+            guard justAdded else { return }
+            try? await Task.sleep(for: .seconds(1.5))
+            withAnimation(reduceMotion ? .none : .spring(duration: 0.3)) { justAdded = false }
+        }
+        .animation(reduceMotion ? .none : .easeInOut, value: canAdd)
     }
 }
 

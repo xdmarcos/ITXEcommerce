@@ -28,7 +28,7 @@ struct WelcomeView: View {
             if let desc = description {
                 Text(desc)
                     .font(.title3)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.secondary)
             }
         }
     }

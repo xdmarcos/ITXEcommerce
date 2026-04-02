@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CatalogGridView: View {
-    @Bindable var viewModel: CatalogViewModel
+    var viewModel: CatalogViewModel
 
     private var gridColumns: [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: 12), count: viewModel.columnCount)
