@@ -11,11 +11,11 @@ struct SettingsView: View {
     @Environment(SettingsViewModel.self) private var viewModel
 
     var body: some View {
-        @Bindable var viewModel = viewModel
+        @Bindable var bindableViewModel = viewModel
         NavigationStack {
             Form {
                 Section("Appearance") {
-                    Picker("Theme", selection: $viewModel.colorScheme) {
+                    Picker("Theme", selection: $bindableViewModel.colorScheme) {
                         ForEach(AppColorScheme.allCases, id: \.self) { scheme in
                             Text(scheme.title).tag(scheme)
                         }
@@ -26,7 +26,7 @@ struct SettingsView: View {
                 }
 
                 Section("Language") {
-                    Picker("Language", selection: $viewModel.language) {
+                    Picker("Language", selection: $bindableViewModel.language) {
                         ForEach(AppLanguage.allCases, id: \.self) { lang in
                             Text(lang.title).tag(lang)
                         }
@@ -38,34 +38,33 @@ struct SettingsView: View {
 
                 Section("Data") {
                     Button("Clear Cache", role: .destructive) {
-                        viewModel.clearCacheButtonOnTap()
+                        bindableViewModel.clearCacheButtonOnTap()
                     }
                 }
             }
             .navigationTitle("Settings")
             .confirmationDialog(
                 "Clear Cache",
-                isPresented: $viewModel.showClearCacheConfirmation,
+                isPresented: $bindableViewModel.showClearCacheConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Clear", role: .destructive) { viewModel.clearCache() }
-                Button("Cancel", role: .cancel) {}
+                Button("Clear", role: .destructive) { bindableViewModel.clearCache() }
             } message: {
                 Text("This will remove all locally cached product data. It will be re-downloaded on next use.")
             }
             .alert("Cache Cleared", isPresented: Binding(
-                get: { viewModel.cacheCleared },
-                set: { if !$0 { viewModel.cacheClearedDismissed() } }
+                get: { bindableViewModel.cacheCleared },
+                set: { if !$0 { bindableViewModel.cacheClearedDismissed() } }
             )) {
-                Button("OK") { viewModel.cacheClearedDismissed() }
+                Button("OK") { bindableViewModel.cacheClearedDismissed() }
             } message: {
                 Text("The product cache has been cleared successfully.")
             }
             .alert("Error", isPresented: Binding(
-                get: { viewModel.clearCacheError != nil },
-                set: { if !$0 { viewModel.clearCacheErrorDismissed() } }
-            ), presenting: viewModel.clearCacheError) { _ in
-                Button("OK", role: .cancel) { viewModel.clearCacheErrorDismissed() }
+                get: { bindableViewModel.clearCacheError != nil },
+                set: { if !$0 { bindableViewModel.clearCacheErrorDismissed() } }
+            ), presenting: bindableViewModel.clearCacheError) { _ in
+                Button("OK", role: .cancel) { bindableViewModel.clearCacheErrorDismissed() }
             } message: { error in
                 Text(error.localizedDescription)
             }

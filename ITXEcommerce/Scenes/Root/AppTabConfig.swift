@@ -1,5 +1,5 @@
 //
-//  AppTab.swift
+//  AppTabConfig.swift
 //  ITXEcommerce
 //
 //  Created by xdmGzDev on 30/3/26.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum AppTab {
+enum AppTabConfig {
     case catalog
     case quickStart
     case settings
