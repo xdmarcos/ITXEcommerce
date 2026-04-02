@@ -5,6 +5,7 @@
 //  Created by xdmGzDev on 27/3/26.
 //
 
+import CoreNetwork
 import SwiftData
 import SwiftUI
 
@@ -21,7 +22,7 @@ struct ITXEcommerceApp: App {
         do {
             let container = try ModelContainer(for: Product.self, CartItem.self)
             self.container = container
-            let productRepository = ProductRepository(modelContainer: container)
+            let productRepository = ProductRepository(modelContainer: container, apiClient: ApiClient())
             self.productRepository = productRepository
             self.cartViewModel = CartViewModel(repository: CartRepository(modelContext: container.mainContext))
             self.settingsViewModel = SettingsViewModel(repository: productRepository)

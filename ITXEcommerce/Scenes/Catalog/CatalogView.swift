@@ -22,6 +22,7 @@ struct CatalogView: View {
                 .task {
                     viewModel.onFirstAppear()
                 }
+                .searchable(text: $viewModel.searchText, prompt: "Search products")
                 .navigationTitle(viewModel.filteredProducts.isEmpty ? "Catalog" : "Catalog [\(viewModel.filteredProducts.count)]")
                 .navigationDestination(for: Product.self) { product in
                     ProductDetailView(product: product)

@@ -17,6 +17,7 @@ final class CatalogViewModel {
     let allCategories = ProductCategory.allCases
     let allSortOption = ProductSortOption.allCases
     var columnCount: Int = 2
+    var searchText: String = ""
     var selectedCategory: ProductCategory?
     var selectedSort: ProductSortOption?
     var selectedProduct: Product?
@@ -37,7 +38,10 @@ final class CatalogViewModel {
     }
 
     var filteredProducts: [Product] {
-        let filtered = selectedCategory.map { cat in products.filter { $0.category == cat } } ?? products
+        let byCategory = selectedCategory.map { cat in products.filter { $0.category == cat } } ?? products
+        let filtered = searchText.isEmpty
+            ? byCategory
+            : byCategory.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
         switch selectedSort {
         case .none: return filtered
         case .categoryAZ: return filtered.sorted { $0.category.displayName < $1.category.displayName }
