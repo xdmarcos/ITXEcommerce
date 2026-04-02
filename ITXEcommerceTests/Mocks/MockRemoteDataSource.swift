@@ -8,6 +8,8 @@
 import Foundation
 @testable import ITXEcommerce
 
+struct RemoteStubError: Error, Equatable {}
+
 final class MockRemoteDataSource: RemoteDataSourceProtocol {
     var pageResult: Result<ProductsDTO, Error>
     var allResult: Result<ProductsDTO, Error>

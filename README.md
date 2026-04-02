@@ -8,31 +8,59 @@ A modern iOS ecommerce application built with the latest Apple frameworks and Sw
 
 ## Architecture Overview
 
-The app follows **MVVM (Model-View-ViewModel)** with a Repository pattern as the data layer.
+The app follows **MVVM (Model-View-ViewModel)** with a Repository pattern as the data layer, structured around Clean Architecture and SOLID principles.
 
 ### Pattern choice and reasoning
 
 MVVM was chosen because it maps naturally onto SwiftUI's reactive model: Views observe `@Observable` ViewModels and re-render on state changes with no manual binding boilerplate. Business logic and side-effects live exclusively in ViewModels, keeping Views declarative and easy to reason about.
+
+The Repository layer provides the abstraction boundary between persistence and presentation — every ViewModel receives a protocol, never a concrete type, enabling trivial mocking in tests and clean layer separation.
 
 ### Code organisation
 
 ```
 ITXEcommerce/
 ├── App/                        # Entry point, DI wiring, xcconfig environments
-├── Model/                      # SwiftData @Model classes (Product, CartItem)
+│   └── Configuration/          # EnvironmentManager (staging / production)
+├── Model/                      # SwiftData @Model classes (Product, CartItem) + DTOs
 ├── Repositories/               # Protocol-backed data layer + SwiftData persistence
 │   ├── ProductRepositoryProtocol / ProductRepository
 │   ├── CartRepositoryProtocol  / CartRepository
-│   ├── ProductUpsertActor      # Background @ModelActor for SwiftData writes
-│   └── Mocks/                  # MockProductRepository, MockCartRepository
+│   ├── RemoteDataSourceProtocol                # Network boundary protocol
+│   ├── ProductUpsertActor                      # Background @ModelActor for SwiftData writes
+│   ├── CacheManageable                         # Narrow ISP protocol for cache clearing
+│   ├── ClearAllDataService                     # SRP composition: clears product + cart caches
+│   ├── NullProductRepository                   # Null-object default for environment key
+│   ├── NullCartRepository                      # Null-object default for environment key
+│   └── NullCacheManageable                     # Null-object default for environment key
+├── Services/                   # Concrete remote data source + endpoint definitions
+│   ├── DummyJsonRemoteDataSource
+│   └── ServiceProvider (DummyJsonEndpointProvider)
 ├── Scenes/
 │   ├── Root/                   # Tab navigation (RootView + RootViewModel)
-│   ├── Catalog/                # Product grid with pagination, sort, category filter
+│   ├── Catalog/                # Product grid with pagination, sort, category filter, search
 │   ├── ProductDetail/          # Full product detail + image gallery + add to cart
 │   ├── Cart/                   # Cart list, quantity controls, checkout
 │   ├── Settings/               # Theme, language, cache management
-│   └── Common/                 # Shared UI components
+│   ├── QuickStart/             # In-app README renderer (MarkdownView)
+│   └── Common/                 # Shared UI components + ProductCategory+Color extension
 └── CoreNetwork/                # Local Swift Package — generic HTTP client
+```
+
+```
+ITXEcommerceTests/
+├── Mocks/
+│   ├── MockProductRepository
+│   ├── MockCartRepository
+│   ├── MockCacheManager
+│   └── MockRemoteDataSource
+├── CatalogViewModelTests
+├── CartViewModelTests
+├── ProductDetailViewModelTests
+├── SettingsViewModelTests
+├── ProductRepositoryTests
+├── CartRepositoryTests
+└── ProductUpsertActorTests
 ```
 
 ### Main components / layers
@@ -43,6 +71,7 @@ ITXEcommerce/
 | ViewModel | `@Observable` | State, user intent, async coordination |
 | Repository | Protocol + SwiftData | Data fetching, local persistence, cache |
 | Persistence actor | `@ModelActor` | Background SwiftData upserts off the main thread |
+| Composition service | `ClearAllDataService` | Orchestrates multi-repository clearing at the app level |
 | Network | CoreNetwork SPM | Generic async/await HTTP client |
 
 ### Alternatives considered and discarded
@@ -94,6 +123,8 @@ All HTTP communication is handled by a local Swift Package (`CoreNetwork`) so th
 - `RequestInterceptor` — adapt requests and handle retries (`.retry`, `.retryWithDelay`, `.doNotRetry`)
 - `Session` abstraction over `URLSession` for testability
 
+`ProductRepository` depends on `RemoteDataSourceProtocol`, not on `CoreNetwork` directly — the concrete `DummyJsonRemoteDataSource` is the only file that imports `CoreNetwork`, honouring the dependency rule.
+
 ### Image caching — `NSCache`
 
 `AsyncImage` was replaced with a custom `CachedAsyncImage` backed by `NSCache<NSURL, UIImage>`. `NSCache` was chosen over a Swift actor-based dictionary for three reasons:
@@ -104,15 +135,27 @@ All HTTP communication is handled by a local Swift Package (`CoreNetwork`) so th
 
 `NSCache` is wrapped in a `@unchecked Sendable` class to satisfy Swift 6 concurrency rules; thread safety is guaranteed by `NSCache` internally.
 
+The image download is injectable via an `imageLoader: (URL) async throws -> Data` closure (defaults to `URLSession.shared`), making `CachedAsyncImage` fully testable without network access and decoupled from `URLSession` as a concrete type (DIP).
+
 ### Pagination — infinite scroll
 
 The catalog fetches pages of 20 products. A zero-height sentinel `Color.clear` at the bottom of the `LazyVGrid` triggers `loadNextPage()` on `onAppear`. The sentinel is only rendered after `firstLoadCompleted` to prevent a race between the initial load and the first scroll event.
 
 A double-guard pattern (`guard !isLoadingMore, hasMore`) in both `loadNextPage()` and `fetchNextPage()` ensures at most one in-flight request at any time.
 
-### Dependency injection — environment values
+### Dependency injection — environment values + protocol injection
 
 `ProductRepositoryProtocol` is injected via a custom SwiftUI `EnvironmentKey`. `CartViewModel` and `SettingsViewModel` are injected via `.environment(_:)` at the `WindowGroup` level. This avoids singletons and makes every ViewModel trivially testable with mock repositories.
+
+Environment key defaults use **Null Object** implementations (`NullProductRepository`, `NullCartRepository`) rather than mocks, keeping production-safe no-op behaviour in the app target. Mocks live exclusively in the test target.
+
+`SettingsViewModel` depends on `any CacheManageable` (a single-method protocol), not the full `ProductRepositoryProtocol` — this is an **ISP** fix that narrows the dependency to exactly what the consumer needs.
+
+### Cache clearing — `ClearAllDataService`
+
+Clearing the cache requires deleting both product and cart data. Previously, `ProductRepository.clearCache()` deleted `CartItem` rows directly — a **SRP** violation (a product repository should not know about cart state).
+
+`ClearAllDataService` is a thin composition struct that holds references to `any CacheManageable` (product side) and `any CartRepositoryProtocol` (cart side), and calls both in sequence. It is wired at the composition root (`ITXEcommerceApp`) and injected into `SettingsViewModel` as `any CacheManageable`. Neither repository is aware of the other.
 
 ### Dependency management — SPM only
 
@@ -120,32 +163,86 @@ No CocoaPods or Carthage. `CoreNetwork` is a local package (`./CoreNetwork`). Sw
 
 ---
 
+## SOLID & Clean Architecture Decisions
+
+A targeted refactor was applied after the initial implementation to resolve concrete SOLID violations. The key changes and their rationale:
+
+### ISP — `CacheManageable` protocol
+
+`ProductRepositoryProtocol` originally included `clearCache()`. `SettingsViewModel` only ever called that one method but was forced to depend on the entire repository interface (four fetch methods it never used). Extracting `CacheManageable` (a single-method protocol) narrows the dependency to exactly what is needed, and makes the test mock for `SettingsViewModelTests` trivial — one method instead of five.
+
+### SRP — `ClearAllDataService`
+
+`ProductRepository.clearCache()` previously deleted both `Product` and `CartItem` rows. A repository for products has no business reason to know about cart data. Moving the coordination into `ClearAllDataService` gives each repository a single reason to change.
+
+### DIP — `RemoteDataSourceProtocol`
+
+`ProductRepository` was decoupled from the concrete `DummyJsonRemoteDataSource` by introducing `RemoteDataSourceProtocol`. The repository now depends on an abstraction; `DummyJsonRemoteDataSource` is only instantiated in the composition root. This enabled repository-level unit tests (`ProductRepositoryTests`) with a `MockRemoteDataSource` injected at construction time.
+
+### DIP — injectable `imageLoader` in `CachedAsyncImage`
+
+`URLSession.shared` was hard-coded inside `CachedAsyncImage.load()`. The closure is now an init parameter with a sensible default, enabling tests and previews to inject a stub without real network calls.
+
+### Layer boundary — `ProductCategory+Color`
+
+The `SwiftUI.Color` mapping extension for `ProductCategory` was located in `Model/`, introducing a compile-time `SwiftUI` dependency in the domain layer. It was moved to `Scenes/Common/`, where presentation-only code belongs.
+
+### Null Objects as environment defaults
+
+`MockProductRepository` (and `MockCartRepository`) were previously compiled into the app target as the default `EnvironmentKey` values. Mock implementations belong in the test target. Null Objects replace them: safe, no-op, production-compiled defaults that return empty results without importing test infrastructure.
+
+---
+
 ## Trade-offs and Compromises
 
-### What trade-offs were made
+### Deliberate trade-offs in the SOLID refactor
 
-- **`ProductRepository.fetchPage` falls back to mock data on network failure.** This was intentional for demo reliability, but a production app would surface the error to the user instead of silently degrading.
-- **`clearCache` only deletes `Product` rows.** Cart items and user preferences are untouched. A production "clear all data" action would be more comprehensive.
-- **No search.** The catalog supports category filter and sort but no full-text search. This would be the next natural feature.
+**Use-case layer (Phase 5 — deferred)**
+
+Extracting dedicated use-case objects (`FilterProductsUseCase`, `FetchProductPageUseCase`, `CartUseCase`) was evaluated and intentionally skipped. The codebase is a single-module app of moderate size; the ViewModels are already well-tested and the business rules are straightforward. Adding a use-case layer at this stage would introduce indirection without immediate payoff. The known SRP residue is:
+
+- `CatalogViewModel` still owns filter / sort / pagination logic in addition to UI state.
+- `CartViewModel` still owns stock enforcement and checkout orchestration.
+
+This can be extracted incrementally when the rules grow in complexity or need to be shared across multiple ViewModels.
+
+**SwiftData `@Model` as the domain model (Phase 7 — deliberate design choice)**
+
+A textbook Clean Architecture would introduce plain domain value types (`struct ProductItem`, `struct CartEntry`) and map to/from SwiftData `@Model` objects inside the repository. This was evaluated and intentionally skipped:
+
+- SwiftData is designed by Apple to flow `@Model` objects directly into SwiftUI views — `@Query` requires `@Model` types and cannot operate on plain structs.
+- `@Model` synthesises `@Observable`, making models first-class SwiftUI citizens by design.
+- The "swap the persistence layer" argument does not apply: SwiftData is a first-party Apple framework with near-zero replacement risk.
+- A mapping layer would be pure boilerplate with no behavioural difference.
+
+**Architectural position adopted:** SwiftData `@Model` types *are* the domain model in this app. The repository layer provides the testability boundary. This is a defensible, framework-aligned position — not a compromise. The remaining theoretical violation is that `Product` and `CartItem` have a compile-time dependency on the SwiftData framework.
+
+**Dead endpoint cases in `ServiceProvider`**
+
+`DummyJsonEndpointProvider` still contains `case getCategories` and `case getCategoriesByName(name:)`. These cases are not called by any production code. Removing them was deprioritised in favour of higher-impact architectural changes. They carry no runtime cost and can be removed in a cleanup pass.
+
+### Other trade-offs
+
 - **UserDefaults for settings persistence.** Sufficient for the current settings (theme, language), but a production app with more complex settings would benefit from a dedicated settings repository abstraction.
+- **No offline-first guarantee.** If the app is launched for the first time without network access and the SwiftData cache is empty, the catalog will be empty.
 
 ### What I would do differently with more time
 
-- **Proper error handling in the repository** — remove the mock fallback, propagate errors, and let the UI handle retry gracefully.
 - **Coordinator / Router pattern** — for a larger app, a dedicated routing layer would decouple navigation from ViewModels more cleanly.
 - **Snapshot testing** — add `swift-snapshot-testing` to catch visual regressions on product cards and detail views.
 - **Accessibility** — audit with VoiceOver and Dynamic Type; the current implementation lacks explicit accessibility labels on several custom components.
+- **HTTP caching** — add `ETag` / `Cache-Control` support in `CoreNetwork` instead of manual SwiftData invalidation.
 
 ### What I would change for a production app
 
-- Replace the `@MainActor` protocol constraint on `ProductRepositoryProtocol` with a fully actor-agnostic interface, enabling repository use from any context.
-- Add a proper caching layer with HTTP `ETag` / `Cache-Control` support in `CoreNetwork` instead of manual SwiftData invalidation.
 - Instrument with OSLog and MetricKit for performance and crash observability.
 - Add CI (GitHub Actions) running SwiftLint, unit tests, and snapshot tests on every PR.
+- Add a proper caching layer with HTTP `ETag` / `Cache-Control` support in `CoreNetwork`.
+- Harden `CartRepository` error recovery for corrupt SwiftData state.
 
 ### What was prioritised and why
 
-Core product browsing, cart, and persistence were prioritised because they form the primary user journey. Polish (animations, empty states, image caching, infinite scroll) was added incrementally as the foundation was stable.
+Core product browsing, cart, and persistence were prioritised because they form the primary user journey. Polish (animations, empty states, image caching, infinite scroll) was added incrementally as the foundation was stable. The SOLID refactor was applied last, once the feature set was stable enough to refactor safely.
 
 ---
 
@@ -181,7 +278,7 @@ Or from the terminal:
 xcodebuild test \
   -project ITXEcommerce.xcodeproj \
   -scheme ITXEcommerce-Stage \
-  -destination 'platform=iOS Simulator,name=iPhone 16'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
 ---
@@ -190,27 +287,33 @@ xcodebuild test \
 
 ### What was tested and why
 
-Unit tests focus on ViewModels because that is where all business logic lives. Views are declarative and have no logic to test independently; the Repository layer is tested indirectly through ViewModel tests using mock repositories.
+Unit tests cover ViewModels (all business logic), repositories (data flow and persistence), and the background upsert actor. Views are declarative and have no logic to test independently.
 
 | Test suite | What it covers |
 |-----------|----------------|
-| `CatalogViewModelTests` | Pagination state machine, load guards, category filter, sort, error handling |
+| `CatalogViewModelTests` | Pagination state machine, load guards, category filter, search by title, sort, error handling |
 | `CartViewModelTests` | Add/remove/quantity, stock limits, total price calculation, checkout flow, error states |
 | `ProductDetailViewModelTests` | Initial state, image index, cart interaction flags |
 | `SettingsViewModelTests` | UserDefaults persistence, clear cache success/failure, dismiss handlers, enum computed properties |
+| `ProductRepositoryTests` | Remote fetch, SwiftData persistence, skip/limit forwarding, category filtering, `clearCache` scope |
+| `CartRepositoryTests` | Add, remove, quantity update, clear, persistence |
+| `ProductUpsertActorTests` | Background upsert correctness, deduplication, field updates |
 
 ### Testing approach
 
 - **Swift Testing** framework throughout (no XCTest in unit tests).
-- Each test file is `@MainActor` to match the `@MainActor`-bound ViewModels.
+- Each test file is `@MainActor` to match the `@MainActor`-bound ViewModels and repositories.
 - `@discardableResult Task` return values on async ViewModel methods allow tests to `await task.value` for deterministic completion without `sleep`.
-- Mock repositories (`MockProductRepository`, `MockCartRepository`) are injected via protocol; failing variants (`FailingCartRepository`, `FailingProductRepository`, `FailingClearCacheRepository`) are defined inline in each test file.
+- Mock repositories (`MockProductRepository`, `MockCartRepository`, `MockCacheManager`, `MockRemoteDataSource`) live exclusively in the test target and are injected via protocol.
+- Failing variants (`FailingCartRepository`, `FailingClearCacheRepository`) are defined inline in each test file.
+- `ProductRepositoryTests` uses an in-memory `ModelContainer` and a `MockRemoteDataSource` — repository behaviour is tested end-to-end through SwiftData without touching the network.
 - `SettingsViewModelTests.init()` removes the relevant `UserDefaults` keys before each test to prevent state pollution between runs.
+- `SettingsViewModelTests` injects `MockCacheManager` (a single-method `CacheManageable` conformance) — the narrow ISP protocol means the mock is a one-liner with no stub overhead.
 
 ### What would be tested additionally in production
 
 - **Snapshot tests** — product card, cart row, and empty state views across light/dark/dynamic-type configurations.
-- **Integration tests** — real `ProductRepository` against a local mock server (e.g., `Mockolo` or a local HTTP stub) to validate SwiftData persistence end-to-end.
+- **Integration tests** — real `ProductRepository` against a local HTTP stub to validate end-to-end SwiftData persistence under real network shapes.
 - **UI tests** — happy-path journeys (browse → add to cart → checkout) using `XCUITest`.
 - **Performance tests** — scroll performance under large catalogs using `XCTMetric`.
 
@@ -218,8 +321,8 @@ Unit tests focus on ViewModels because that is where all business logic lives. V
 
 ## Known Limitations
 
-- **Network fallback to mock data** — when the API is unreachable, `ProductRepository` silently returns static mock products instead of propagating the error. This masks connectivity issues.
 - **Language change requires app restart** — `.environment(\.locale, ...)` propagates at the SwiftUI environment level but does not update system-rendered strings (e.g., date formatters). A full restart ensures consistency.
-- **No offline-first guarantee** — if the app is launched for the first time without network access and the SwiftData cache is empty, the catalog will be empty.
-- **Cart is not persisted across sessions fully tested** — `CartRepository` persists via SwiftData, but error recovery on corrupt state has not been hardened.
+- **No offline-first guarantee** — if the app is launched for the first time without network access and the SwiftData cache is empty, the catalog will be empty with no cached data to fall back on.
 - **iOS 26 only features** — the typed `Tab` API in `RootView` is gated behind `#available(iOS 26.0, *)`. The fallback `TabView` on iOS 18–25 works correctly but does not support programmatic tab selection via `RootViewModel`.
+- **Dead endpoint cases** — `DummyJsonEndpointProvider` contains `case getCategories` and `case getCategoriesByName(name:)` which are not used by any production code path.
+- **SwiftData `@Model` in domain layer** — `Product` and `CartItem` import SwiftData, so the domain has a compile-time dependency on the persistence framework. This is a deliberate design decision (see Trade-offs above) aligned with SwiftData's SwiftUI-first philosophy.

@@ -236,6 +236,4 @@ private extension ProductRepositoryTests {
             images: []
         )
     }
-
-    struct RemoteStubError: Error, Equatable {}
 }
